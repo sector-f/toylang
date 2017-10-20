@@ -1,0 +1,11 @@
+[package]
+name = "toylang"
+version = "0.1.0"
+authors = ["Adam <sector-f@users.noreply.github.com>"]
+build = "build.rs"
+
+[dependencies]
+liner = "0.4.2"
+
+[build-dependencies]
+peg = "0.5.4"
