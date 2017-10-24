@@ -1,0 +1,92 @@
+use ast::Expression;
+
+pub expression -> Expression
+    = m:math_expression { Expression::Num(m) }
+    / s:string { Expression::Str(s) }
+    / b:boolean { Expression::Bool(b) }
+    // / a:array { Expression::Array(a) }
+
+// array -> Vec<Expression>
+    // = "[" e:(expression ** ",") "]" { e }
+
+math_expression -> f64
+    = whitespace* left:multiplyingExpression whitespace* right:half_exp* whitespace* {
+        let mut start:f64 = 0.0;
+        for (sign, num) in right {
+            match &*sign {
+                "+" => start += num,
+                "-" => start -= num,
+                _ => unreachable!(),
+            }
+        }
+        start + left
+    }
+
+half_exp -> (String, f64)
+    = whitespace* op:$("+"/"-") whitespace* n:multiplyingExpression whitespace* { (op.to_string(), n) }
+
+multiplyingExpression -> f64
+    = whitespace* left:powExpression whitespace* right:half_mult_exp* whitespace* {
+        let mut start:f64 = 1.0;
+        for (sign, num) in right {
+            match &*sign {
+                "*" => start *= num,
+                "/" => start /= num,
+                _ => unreachable!(),
+            }
+        }
+        start * left
+    }
+
+half_mult_exp -> (String, f64)
+    = whitespace* op:$("*"/"/") whitespace* n:powExpression whitespace* { (op.to_string(), n) }
+    / whitespace* n:paren_expression whitespace* { ("*".to_string(), n) }
+
+powExpression -> f64
+    = whitespace* left:number right:half_pow_exp* whitespace* {
+        let mut numbers = right;
+        numbers.insert(0, left);
+
+        let mut iterator = numbers.into_iter().rev();
+        let first = iterator.next().unwrap();
+
+        iterator.fold(first, |acc, x| {
+            x.powf(acc)
+        })
+    }
+
+half_pow_exp -> f64
+    = "^" n:number { n }
+
+paren_expression -> f64
+    = "(" n:math_expression ")" whitespace* { n }
+
+string -> String
+    // To-Do: Make escapes work
+    = "\"" text:$([^"]*) "\"" { text.to_string() }
+
+boolean -> bool
+    = #quiet<
+    "true" { true }
+    / "false" { false }
+    > / #expected("boolean")
+
+number -> f64
+    = sign:$("-")? n:$(float / int) {
+        [sign, n].concat().replace("_", "").parse().unwrap()
+    }
+    / n:paren_expression { n }
+
+float
+    = int* "." int+
+
+int
+    = digit (digit / "_")*
+
+digit
+    = [0-9]
+
+character
+    = [a-zA-Z]
+
+whitespace = #quiet<[ \n\t]>
