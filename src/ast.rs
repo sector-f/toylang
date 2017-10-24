@@ -1,7 +1,14 @@
 #[derive(Debug)]
+pub enum Line {
+    Statement(Statement),
+    Expression(Expr),
+}
+
+#[derive(Debug)]
 pub enum Statement {
     DeclareVar(String),
     AssignVar(String, Expr),
+    ShadowVar(String, Expr),
     Print(Expr),
 }
 
@@ -18,7 +25,8 @@ pub enum Op {
     Sub,
     Mul,
     Div,
-    Exp
+    Mod,
+    Exp,
 }
 
 #[derive(Debug)]

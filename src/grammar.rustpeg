@@ -3,27 +3,40 @@ use ast::*;
 pub ast -> Vec<Statement>
     = { unimplemented!() }
 
+pub  s_or_e -> Line
+    = s:statement  { Line::Statement(s) }
+    / e:expression { Line::Expression(e) }
+
 pub statement -> Statement
-    = { unimplemented!() }
+    = "let" whitespace* ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::AssignVar(ident, e)
+    }
+    / ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::ShadowVar(ident, e)
+    }
+    / "print" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::Print(e)
+    }
 
-pub expression -> Expr
-    = r:reference { Expr::Reference(r) }
-    / a:arithmetic { a }
-    / v:value { Expr::Literal(v) }
-
-arithmetic -> Expr = #infix<expression> {
+pub expression -> Expr = #infix<atom> {
     #L x "+" y { Expr::Op(Op::Add, Box::new(x), Box::new(y)) }
        x "-" y { Expr::Op(Op::Sub, Box::new(x), Box::new(y)) }
     #L x "*" y { Expr::Op(Op::Mul, Box::new(x), Box::new(y)) }
        x "/" y { Expr::Op(Op::Div, Box::new(x), Box::new(y)) }
-    #R x "^" y { Expr::Op(Op::Exp, Box::new(x), Box::new(y)) }
+       x "%" y { Expr::Op(Op::Mod, Box::new(x), Box::new(y)) }
+    #R x "**" y { Expr::Op(Op::Exp, Box::new(x), Box::new(y)) }
 }
+
+atom -> Expr
+    = "(" e:expression ")" { e }
+    / v:value { Expr::Literal(v) }
+    / r:reference { Expr::Reference(r) }
 
 value -> Value
     = v:(number/string/boolean/array) { v }
 
 reference -> String // Variable lookup
-    = text:$(character+ (character / digit)*) { text.to_string() }
+    = ident:identifier { ident }
 
 array -> Value
     = "[" v:(value ** ("," whitespace*)) "]" { Value::Array(v) }
@@ -36,6 +49,10 @@ boolean -> Value
     = "true" { Value::Boolean(true) }
     / "false" { Value::Boolean(false) }
 
+identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
+
+keyword = "true" / "false" / "let" / "print"
+
 number -> Value
     = s:$("-")? n:$(float) {
         Value::Float([s, n].concat().replace("_", "").parse().unwrap())
@@ -43,13 +60,6 @@ number -> Value
     / s:$("-")? n:$(int) {
         Value::Int([s, n].concat().replace("_", "").parse().unwrap())
     }
-
-// op -> Op
-//     = "**" { Op::Exp }
-//     / "*"  { Op::Mul }
-//     / "/"  { Op::Div }
-//     / "+"  { Op::Add }
-//     / "-"  { Op::Sub }
 
 float
     = int* "." int+

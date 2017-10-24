@@ -24,7 +24,7 @@ fn main() {
                         break;
                     },
                     _ => {
-                        match expression(&line) {
+                        match s_or_e(&line) {
                             Ok(n) => println!("{:?}", n),
                             Err(e) => println!("{}", e),
                         }
