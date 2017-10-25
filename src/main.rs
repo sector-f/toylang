@@ -76,12 +76,25 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
     }
 }
 
-fn run_program(var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
+fn run_program(mut var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
     for statement in tree {
         match statement {
             Statement::AssignVar(s, e) => {
                 let variable = parse_expr(&var_map, e)?;
                 var_map.insert(s, variable);
+            },
+
+            Statement::If(condition, statements) => {
+                let condition = parse_expr(&var_map, condition)?;
+                if let Value::Boolean(b) = condition {
+                    if b {
+                        if let Err(e) = run_program(&mut var_map, statements) {
+                            return Err(e);
+                        }
+                    }
+                } else {
+                    return Err(format!("expected boolean, found {}", condition.get_type()));
+                }
             },
             Statement::Print(e) => {
                 let variable = parse_expr(&var_map, e)?;

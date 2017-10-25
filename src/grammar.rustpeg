@@ -8,12 +8,12 @@ pub  single_line -> Line
     / e:expression whitespace* comment? { Line::Expression(e) }
 
 statement -> Statement
-    = "let" whitespace* ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+    = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::AssignVar(ident, e)
     }
-    // / ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
-    //     Statement::ShadowVar(ident, e)
-    // }
+    / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" {
+        Statement::If(cond, s)
+    }
     / "print" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::Print(e)
     }

@@ -10,6 +10,7 @@ pub enum Line {
 #[derive(Debug)]
 pub enum Statement {
     AssignVar(String, Expr),
+    If(Expr, Vec<Statement>),
     Print(Expr),
 }
 
