@@ -56,9 +56,10 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
         },
     }
 
+    let mut var_map: VarMap = HashMap::new();
     match ast(&buf) {
         Ok(statements) => {
-            match run_program(statements) {
+            match run_program(&mut var_map, statements) {
                 Ok(_) => {
                     return 0;
                 },
@@ -75,9 +76,7 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
     }
 }
 
-fn run_program(tree: Vec<Statement>) -> Result<(), String> {
-    let mut var_map: VarMap = HashMap::new();
-
+fn run_program(var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
     for statement in tree {
         match statement {
             Statement::AssignVar(s, e) => {
@@ -131,6 +130,8 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
 }
 
 fn repl() -> i32 {
+    let mut var_map: VarMap = HashMap::new();
+
     let mut context = Context::new();
     context.completer = None;
     context.key_bindings = KeyBindings::Emacs;
@@ -145,9 +146,29 @@ fn repl() -> i32 {
                         break;
                     },
                     _ => {
-                        match value(&line) {
-                            Ok(n) => println!("{}", n),
-                            Err(e) => println!("{}", e),
+                        match single_line(&line) {
+                            Ok(parsed) => {
+                                match  parsed {
+                                    Line::Statement(s) => {
+                                        if let Err(e) = run_program(&mut var_map, vec![s]) {
+                                            println!("{}", e);
+                                        }
+                                    },
+                                    Line::Expression(e) => {
+                                        match parse_expr(&var_map, e) {
+                                            Ok(expr) => {
+                                                println!("{}", expr);
+                                            },
+                                            Err(e) => {
+                                                println!("{}", e);
+                                            },
+                                        }
+                                    },
+                                }
+                            },
+                            Err(e) => {
+                                println!("{}", e);
+                            },
                         }
                     }
                 }

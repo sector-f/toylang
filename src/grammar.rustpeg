@@ -3,11 +3,11 @@ use ast::*;
 pub ast -> Vec<Statement>
     = whitespace* s:statement* whitespace* { s }
 
-pub  s_or_e -> Line
+pub  single_line -> Line
     = s:statement whitespace* comment? { Line::Statement(s) }
     / e:expression whitespace* comment? { Line::Expression(e) }
 
-pub statement -> Statement
+statement -> Statement
     = "let" whitespace* ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::AssignVar(ident, e)
     }
@@ -18,7 +18,7 @@ pub statement -> Statement
         Statement::Print(e)
     }
 
-pub expression -> Expr = #infix<atom> {
+expression -> Expr = #infix<atom> {
     #L x "+" y { Expr::Op(Op::Add, Box::new(x), Box::new(y)) }
        x "-" y { Expr::Op(Op::Sub, Box::new(x), Box::new(y)) }
     #L x "*" y { Expr::Op(Op::Mul, Box::new(x), Box::new(y)) }
