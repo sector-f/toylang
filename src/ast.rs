@@ -9,20 +9,20 @@ pub enum Line {
 
 #[derive(Debug)]
 pub enum Statement {
-    DeclareVar(String),
+    // DeclareVar(String),
     AssignVar(String, Expr),
     ShadowVar(String, Expr),
     Print(Expr),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Literal(Value),
     Reference(String),
     Op(Op, Box<Expr>, Box<Expr>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Op {
     Add,
     Sub,
@@ -32,20 +32,29 @@ pub enum Op {
     Exp,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Value {
-    Int(i64),
-    Float(f64),
+    Num(f64),
     String(String),
     Boolean(bool),
     Array(Vec<Value>),
 }
 
+impl Value {
+    pub fn get_type(&self) -> &str {
+        match *self {
+            Value::Num(_) => "number",
+            Value::String(_) => "string",
+            Value::Boolean(_) => "boolean",
+            Value::Array(_) => "array",
+        }
+    }
+}
+
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let text = match *self {
-            Value::Int(num) => format!("{}", num),
-            Value::Float(num) => format!("{}", num),
+            Value::Num(num) => format!("{}", num),
             Value::String(ref string) => format!("{}", string),
             Value::Boolean(b) => format!("{}", b),
             Value::Array(ref vec) => {

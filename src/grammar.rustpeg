@@ -1,11 +1,11 @@
 use ast::*;
 
 pub ast -> Vec<Statement>
-    = { unimplemented!() }
+    = whitespace* s:statement* whitespace* { s }
 
 pub  s_or_e -> Line
-    = s:statement  { Line::Statement(s) }
-    / e:expression { Line::Expression(e) }
+    = s:statement whitespace* comment? { Line::Statement(s) }
+    / e:expression whitespace* comment? { Line::Expression(e) }
 
 pub statement -> Statement
     = "let" whitespace* ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
@@ -32,7 +32,7 @@ atom -> Expr
     / v:value { Expr::Literal(v) }
     / r:reference { Expr::Reference(r) }
 
-value -> Value
+pub value -> Value
     = v:(number/string/boolean/array) { v }
 
 reference -> String // Variable lookup
@@ -53,12 +53,14 @@ identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text
 
 keyword = "true" / "false" / "let" / "print"
 
+comment = #quiet<"//" .*>
+
 number -> Value
     = s:$("-")? n:$(float) {
-        Value::Float([s, n].concat().replace("_", "").parse().unwrap())
+        Value::Num([s, n].concat().replace("_", "").parse().unwrap())
     }
     / s:$("-")? n:$(int) {
-        Value::Int([s, n].concat().replace("_", "").parse().unwrap())
+        Value::Num([s, n].concat().replace("_", "").parse().unwrap())
     }
 
 float
@@ -72,5 +74,7 @@ digit
 
 character
     = [a-zA-Z]
+
+EOF = #quiet<!.>
 
 whitespace = #quiet<[ \n\t]>
