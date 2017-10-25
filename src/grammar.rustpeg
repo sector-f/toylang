@@ -19,12 +19,12 @@ statement -> Statement
     }
 
 expression -> Expr = #infix<atom> {
-    #L x "+" y { Expr::Op(Op::Add, Box::new(x), Box::new(y)) }
-       x "-" y { Expr::Op(Op::Sub, Box::new(x), Box::new(y)) }
-    #L x "*" y { Expr::Op(Op::Mul, Box::new(x), Box::new(y)) }
-       x "/" y { Expr::Op(Op::Div, Box::new(x), Box::new(y)) }
-       x "%" y { Expr::Op(Op::Mod, Box::new(x), Box::new(y)) }
-    #R x "**" y { Expr::Op(Op::Exp, Box::new(x), Box::new(y)) }
+    #L x (whitespace* "+"  whitespace*) y { Expr::Op(Op::Add, Box::new(x), Box::new(y)) }
+       x (whitespace* "-"  whitespace*) y { Expr::Op(Op::Sub, Box::new(x), Box::new(y)) }
+    #L x (whitespace* "*"  whitespace*) y { Expr::Op(Op::Mul, Box::new(x), Box::new(y)) }
+       x (whitespace* "/"  whitespace*) y { Expr::Op(Op::Div, Box::new(x), Box::new(y)) }
+       x (whitespace* "%"  whitespace*) y { Expr::Op(Op::Mod, Box::new(x), Box::new(y)) }
+    #R x (whitespace* "**" whitespace*) y { Expr::Op(Op::Exp, Box::new(x), Box::new(y)) }
 }
 
 atom -> Expr
