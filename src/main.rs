@@ -171,6 +171,18 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
                 Err(format!("invalid boolean logic (expected two booleans, found {} and {})", left.get_type(), right.get_type()))
             }
         }
+        Expr::UnOp(op, expr) => {
+            let expr = parse_expr(&vars, *expr)?;
+            match op {
+                UnaryOp::Not => {
+                    if let &Value::Boolean(b) = &expr {
+                        Ok(Value::Boolean(!b))
+                    } else {
+                        Err(format!("cannot negate {}", expr.get_type()))
+                    }
+                },
+            }
+        }
     }
 }
 

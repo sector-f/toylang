@@ -18,7 +18,9 @@ statement -> Statement
         Statement::Print(e)
     }
 
-expression -> Expr = #infix<atom> {
+expression -> Expr
+= "!" whitespace* e:atom { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
+/ #infix<atom> {
     #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
     #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
 
@@ -38,8 +40,6 @@ expression -> Expr = #infix<atom> {
        x (whitespace* "%"  whitespace*) y { Expr::BinOp(Op::Mod, Box::new(x), Box::new(y)) }
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
-
-    // #L x (whitespace* "!" whitespace*) y { Expr::Comparison(CompOp::Not, Box::new(x), Box::new(y)) }
 }
 
 atom -> Expr

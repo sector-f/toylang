@@ -20,6 +20,7 @@ pub enum Expr {
     BinOp(Op, Box<Expr>, Box<Expr>),
     Comparison(CompOp, Box<Expr>, Box<Expr>),
     BoolChain(BoolLogic, Box<Expr>, Box<Expr>),
+    UnOp(UnaryOp, Box<Expr>),
 }
 
 #[derive(Debug, Clone)]
@@ -46,6 +47,11 @@ pub enum CompOp {
 pub enum BoolLogic {
     And,
     Or,
+}
+
+#[derive(Debug, Clone)]
+pub enum UnaryOp {
+    Not,
 }
 
 #[derive(Debug, Clone)]
