@@ -17,3 +17,6 @@ aim to be actually useful.
 * Functions
 * Boolean logic (`==`, `&&`, etc)
 * Pick a better name
+* Type conversion (at least `string` to other types)
+* Read script's positional parameters
+* Read line of input (e.g. Bash's `read` builtin)
