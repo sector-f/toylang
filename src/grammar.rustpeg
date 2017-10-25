@@ -19,8 +19,8 @@ statement -> Statement
     }
 
 expression -> Expr = #infix<atom> {
-    // #L x (whitespace* "||" whitespace*) y { Expr::Comparison(CompOp::Or, Box::new(x), Box::new(y)) }
-    //    x (whitespace* "&&" whitespace*) y { Expr::Comparison(CompOp::And, Box::new(x), Box::new(y)) }
+    #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
+    #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
 
     #L x (whitespace* "==" whitespace*) y { Expr::Comparison(CompOp::Equal, Box::new(x), Box::new(y)) }
        x (whitespace* "!=" whitespace*) y { Expr::Comparison(CompOp::NotEq, Box::new(x), Box::new(y)) }

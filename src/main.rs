@@ -156,6 +156,21 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
                 Err(format!("invalid comparison ({} with {})", left.get_type(), right.get_type()))
             }
         },
+        Expr::BoolChain(op, left, right) => {
+            let left = parse_expr(&vars, *left)?;
+            let right = parse_expr(&vars, *right)?;
+
+            if let (&Value::Boolean(b1), &Value::Boolean(b2)) = (&left, &right) {
+                Ok(Value::Boolean(
+                    match op {
+                        BoolLogic::And => b1 && b2,
+                        BoolLogic::Or => b1 || b2,
+                    }
+                ))
+            } else {
+                Err(format!("invalid boolean logic (expected two booleans, found {} and {})", left.get_type(), right.get_type()))
+            }
+        }
     }
 }
 

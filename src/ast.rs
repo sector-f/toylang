@@ -19,6 +19,7 @@ pub enum Expr {
     Reference(String),
     BinOp(Op, Box<Expr>, Box<Expr>),
     Comparison(CompOp, Box<Expr>, Box<Expr>),
+    BoolChain(BoolLogic, Box<Expr>, Box<Expr>),
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +40,12 @@ pub enum CompOp {
     Ge,
     Lt,
     Le,
+}
+
+#[derive(Debug, Clone)]
+pub enum BoolLogic {
+    And,
+    Or,
 }
 
 #[derive(Debug, Clone)]
