@@ -7,15 +7,21 @@ toylang is an interpreted programming language created for the purpose of learni
 abstract syntax trees, and other things related to the implementation of programming languages. It does not
 aim to be actually useful.
 
+## Features
+
+* Primitive types (number, string, boolean, array)
+* Variable assignment
+* Variable printing
+* Boolean logic (comparison of numbers/strings)
+* `if` statements
+* Interactive REPL
+
 ## To-Do
 * Array indices
-* Better whitespace handling
-* `if` statements
 * `while` loops
 * `for` loops
 * `exit` command
 * Functions
-* Boolean logic (`==`, `&&`, etc)
 * Pick a better name
 * Type conversion (at least `string` to other types)
 * Read script's positional parameters
