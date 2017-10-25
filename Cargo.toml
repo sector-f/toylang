@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 liner = "0.4.2"
+itertools = "0.7.1"
 
 [build-dependencies]
 peg = "0.5.4"
