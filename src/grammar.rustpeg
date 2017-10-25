@@ -11,20 +11,35 @@ statement -> Statement
     = "let" whitespace* ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::AssignVar(ident, e)
     }
-    / ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
-        Statement::ShadowVar(ident, e)
-    }
+    // / ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+    //     Statement::ShadowVar(ident, e)
+    // }
     / "print" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::Print(e)
     }
 
 expression -> Expr = #infix<atom> {
-    #L x (whitespace* "+"  whitespace*) y { Expr::Op(Op::Add, Box::new(x), Box::new(y)) }
-       x (whitespace* "-"  whitespace*) y { Expr::Op(Op::Sub, Box::new(x), Box::new(y)) }
-    #L x (whitespace* "*"  whitespace*) y { Expr::Op(Op::Mul, Box::new(x), Box::new(y)) }
-       x (whitespace* "/"  whitespace*) y { Expr::Op(Op::Div, Box::new(x), Box::new(y)) }
-       x (whitespace* "%"  whitespace*) y { Expr::Op(Op::Mod, Box::new(x), Box::new(y)) }
-    #R x (whitespace* "**" whitespace*) y { Expr::Op(Op::Exp, Box::new(x), Box::new(y)) }
+    // #L x (whitespace* "||" whitespace*) y { Expr::Comparison(CompOp::Or, Box::new(x), Box::new(y)) }
+    //    x (whitespace* "&&" whitespace*) y { Expr::Comparison(CompOp::And, Box::new(x), Box::new(y)) }
+
+    #L x (whitespace* "==" whitespace*) y { Expr::Comparison(CompOp::Equal, Box::new(x), Box::new(y)) }
+       x (whitespace* "!=" whitespace*) y { Expr::Comparison(CompOp::NotEq, Box::new(x), Box::new(y)) }
+
+    #L x (whitespace* "<" whitespace*) y { Expr::Comparison(CompOp::Lt, Box::new(x), Box::new(y)) }
+       x (whitespace* "<=" whitespace*) y { Expr::Comparison(CompOp::Le, Box::new(x), Box::new(y)) }
+       x (whitespace* ">" whitespace*) y { Expr::Comparison(CompOp::Gt, Box::new(x), Box::new(y)) }
+       x (whitespace* ">=" whitespace*) y { Expr::Comparison(CompOp::Ge, Box::new(x), Box::new(y)) }
+
+    #L x (whitespace* "+"  whitespace*) y { Expr::BinOp(Op::Add, Box::new(x), Box::new(y)) }
+       x (whitespace* "-"  whitespace*) y { Expr::BinOp(Op::Sub, Box::new(x), Box::new(y)) }
+
+    #L x (whitespace* "*"  whitespace*) y { Expr::BinOp(Op::Mul, Box::new(x), Box::new(y)) }
+       x (whitespace* "/"  whitespace*) y { Expr::BinOp(Op::Div, Box::new(x), Box::new(y)) }
+       x (whitespace* "%"  whitespace*) y { Expr::BinOp(Op::Mod, Box::new(x), Box::new(y)) }
+
+    #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
+
+    // #L x (whitespace* "!" whitespace*) y { Expr::Comparison(CompOp::Not, Box::new(x), Box::new(y)) }
 }
 
 atom -> Expr

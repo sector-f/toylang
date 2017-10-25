@@ -9,9 +9,7 @@ pub enum Line {
 
 #[derive(Debug)]
 pub enum Statement {
-    // DeclareVar(String),
     AssignVar(String, Expr),
-    ShadowVar(String, Expr),
     Print(Expr),
 }
 
@@ -19,7 +17,8 @@ pub enum Statement {
 pub enum Expr {
     Literal(Value),
     Reference(String),
-    Op(Op, Box<Expr>, Box<Expr>),
+    BinOp(Op, Box<Expr>, Box<Expr>),
+    Comparison(CompOp, Box<Expr>, Box<Expr>),
 }
 
 #[derive(Debug, Clone)]
@@ -30,6 +29,16 @@ pub enum Op {
     Div,
     Mod,
     Exp,
+}
+
+#[derive(Debug, Clone)]
+pub enum CompOp {
+    Equal,
+    NotEq,
+    Gt,
+    Ge,
+    Lt,
+    Le,
 }
 
 #[derive(Debug, Clone)]

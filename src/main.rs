@@ -83,10 +83,6 @@ fn run_program(var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), String>
                 let variable = parse_expr(&var_map, e)?;
                 var_map.insert(s, variable);
             },
-            Statement::ShadowVar(s, e) => {
-                let variable = parse_expr(&var_map, e)?;
-                var_map.insert(s, variable);
-            },
             Statement::Print(e) => {
                 let variable = parse_expr(&var_map, e)?;
                 println!("{}", variable);
@@ -105,7 +101,7 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
         Expr::Reference(r) => {
             vars.get(&r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
         },
-        Expr::Op(op, left, right) => {
+        Expr::BinOp(op, left, right) => {
             let left = parse_expr(&vars, *left)?;
             let right = parse_expr(&vars, *right)?;
 
@@ -123,7 +119,41 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
             if let (&Value::Num(n1), &Value::Num(n2)) = (&left, &right) {
                 Ok(Value::Num(math(n1, n2)))
             } else {
-                Err(format!("Attempted to perform math with {} and {}", left.get_type(), right.get_type()))
+                Err(format!("invalid math ({} with {})", left.get_type(), right.get_type()))
+            }
+        },
+        Expr::Comparison(op, left, right) => {
+            let left = parse_expr(&vars, *left)?;
+            let right = parse_expr(&vars, *right)?;
+
+            let compare_bools = |left: f64, right: f64| {
+                match op {
+                    CompOp::Equal => left == right,
+                    CompOp::NotEq => left != right,
+                    CompOp::Gt => left > right,
+                    CompOp::Ge => left >= right,
+                    CompOp::Lt => left < right,
+                    CompOp::Le => left <= right,
+                }
+            };
+
+            let compare_strs = |left: &str, right: &str| {
+                match op {
+                    CompOp::Equal => left == right,
+                    CompOp::NotEq => left != right,
+                    CompOp::Gt => left > right,
+                    CompOp::Ge => left >= right,
+                    CompOp::Lt => left < right,
+                    CompOp::Le => left <= right,
+                }
+            };
+
+            if let (&Value::Num(n1), &Value::Num(n2)) = (&left, &right) {
+                Ok(Value::Boolean(compare_bools(n1, n2)))
+            } else if let (&Value::String(ref s1), &Value::String(ref s2)) = (&left, &right) {
+                Ok(Value::Boolean(compare_strs(s1, s2)))
+            } else {
+                Err(format!("invalid comparison ({} with {})", left.get_type(), right.get_type()))
             }
         },
     }
@@ -160,7 +190,7 @@ fn repl() -> i32 {
                                                 println!("{}", expr);
                                             },
                                             Err(e) => {
-                                                println!("{}", e);
+                                                println!("Error: {}", e);
                                             },
                                         }
                                     },
