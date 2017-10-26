@@ -9,8 +9,7 @@ pub enum Line {
 
 #[derive(Debug)]
 pub enum Statement {
-    GlobalVar(String, Expr),
-    LocalVar(String, Expr),
+    DeclareVar(String, Expr),
     If(Expr, Vec<Statement>),
     Print(Expr),
 }

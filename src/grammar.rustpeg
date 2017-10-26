@@ -8,11 +8,8 @@ pub single_line -> Line
     / e:expression whitespace* comment? { Line::Expression(e) }
 
 statement -> Statement
-    = "global" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
-        Statement::GlobalVar(ident, e)
-    }
-    / "local" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
-        Statement::LocalVar(ident, e)
+    = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::DeclareVar(ident, e)
     }
     / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::If(cond, s)
@@ -69,9 +66,9 @@ boolean -> Value
 
 identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "global" / "print" / "local"
+keyword = "true" / "false" / "let" / "print"
 
-comment = #quiet<"//" [^"\n\r"]*>
+comment = #quiet<"//" [^\n\r]*>
 
 number -> Value
     = s:$("-")? n:$(float) {
@@ -95,4 +92,4 @@ character
 
 EOF = #quiet<!.>
 
-whitespace = #quiet<[ \n\t] / comment>
+whitespace = #quiet<[ \n\r\t] / comment>
