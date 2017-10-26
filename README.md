@@ -22,7 +22,8 @@ aim to be actually useful.
 * `for` loops
 * `exit` command
 * Functions
-* Pick a better name
 * Type conversion (at least `string` to other types)
 * Read script's positional parameters
 * Read line of input (e.g. Bash's `read` builtin)
+* Parse comments correctly
+* Pick a better name
