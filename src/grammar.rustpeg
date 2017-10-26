@@ -11,6 +11,9 @@ statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::DeclareVar(ident, e)
     }
+    / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::ShadowVar(op, ident, e)
+    }
     / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::If(cond, s)
     }
@@ -41,6 +44,14 @@ expression -> Expr
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
 }
+
+assign_op -> AssignOp
+    = "="  { AssignOp::Equals }
+    / "+=" { AssignOp::AddEq }
+    / "-=" { AssignOp::SubEq }
+    / "*=" { AssignOp::MulEq }
+    / "/=" { AssignOp::DivEq }
+    / "%=" { AssignOp::ModEq }
 
 atom -> Expr
     = "(" e:expression ")" { e }

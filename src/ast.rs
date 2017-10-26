@@ -10,6 +10,7 @@ pub enum Line {
 #[derive(Debug)]
 pub enum Statement {
     DeclareVar(String, Expr),
+    ShadowVar(AssignOp, String, Expr),
     If(Expr, Vec<Statement>),
     Print(Expr),
 }
@@ -32,6 +33,16 @@ pub enum Op {
     Div,
     Mod,
     Exp,
+}
+
+#[derive(Debug, Clone)]
+pub enum AssignOp {
+    Equals,
+    AddEq,
+    SubEq,
+    MulEq,
+    DivEq,
+    ModEq,
 }
 
 #[derive(Debug, Clone)]

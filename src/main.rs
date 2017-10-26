@@ -80,8 +80,48 @@ fn run_program(mut global_vars: &mut VarMap, tree: Vec<Statement>) -> Result<(),
     for statement in tree {
         match statement {
             Statement::DeclareVar(name, expr) => {
-                let variable = parse_expr(&global_vars, expr)?;
-                global_vars.insert(name.clone(), variable.clone());
+                let value = parse_expr(&global_vars, expr)?;
+                global_vars.insert(name, value);
+            },
+            Statement::ShadowVar(op, name, expr) => {
+                if let None = global_vars.get(&name) {
+                    return Err(format!("undeclared variable: {}", name));
+                }
+
+                let old_value = global_vars.get(&name).unwrap().clone();
+                let rhs = parse_expr(&global_vars, expr)?;
+
+                match op {
+                    AssignOp::Equals => {
+                        global_vars.insert(name, rhs);
+                    },
+                    _ => {
+                        if let (&Value::Num(old), &Value::Num(new)) = (&old_value, &rhs) {
+                            let new_value;
+                            match op {
+                                AssignOp::AddEq => {
+                                    new_value = old + new;
+                                },
+                                AssignOp::SubEq => {
+                                    new_value = old - new;
+                                },
+                                AssignOp::MulEq => {
+                                    new_value = old * new;
+                                },
+                                AssignOp::DivEq => {
+                                    new_value = old / new;
+                                },
+                                AssignOp::ModEq => {
+                                    new_value = old % new;
+                                },
+                                _ => unreachable!(),
+                            }
+                            global_vars.insert(name, Value::Num(new_value));
+                        } else {
+                            return Err(format!("= is only valid assignment for {}", old_value.get_type()));
+                        }
+                    },
+                }
             },
             Statement::If(condition, statements) => {
                 let condition = parse_expr(&global_vars, condition)?;
