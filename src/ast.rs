@@ -3,13 +3,14 @@ use std::fmt::{Display, Error, Formatter};
 
 #[derive(Debug)]
 pub enum Line {
-    Statements(Vec<Statement>),
+    Statement(Statement),
     Expression(Expr),
 }
 
 #[derive(Debug)]
 pub enum Statement {
-    AssignVar(String, Expr),
+    GlobalVar(String, Expr),
+    LocalVar(String, Expr),
     If(Expr, Vec<Statement>),
     Print(Expr),
 }

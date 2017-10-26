@@ -76,18 +76,23 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
     }
 }
 
-fn run_program(mut var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
+fn run_program(mut global_vars: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
+    let mut local_vars = HashMap::new();
     for statement in tree {
         match statement {
-            Statement::AssignVar(s, e) => {
-                let variable = parse_expr(&var_map, e)?;
-                var_map.insert(s, variable);
+            Statement::GlobalVar(name, expr) => {
+                let variable = parse_expr(&local_vars, &global_vars, expr)?;
+                global_vars.insert(name.clone(), variable.clone());
+            },
+            Statement::LocalVar(name, expr) => {
+                let variable = parse_expr(&local_vars, &global_vars, expr)?;
+                local_vars.insert(name, variable);
             },
             Statement::If(condition, statements) => {
-                let condition = parse_expr(&var_map, condition)?;
+                let condition = parse_expr(&local_vars, &global_vars, condition)?;
                 if let Value::Boolean(b) = condition {
                     if b {
-                        if let Err(e) = run_program(&mut var_map, statements) {
+                        if let Err(e) = run_program(&mut local_vars, statements) {
                             return Err(e);
                         }
                     }
@@ -96,7 +101,7 @@ fn run_program(mut var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), Str
                 }
             },
             Statement::Print(e) => {
-                let variable = parse_expr(&var_map, e)?;
+                let variable = parse_expr(&local_vars, &global_vars, e)?;
                 println!("{}", variable);
             },
         }
@@ -105,17 +110,17 @@ fn run_program(mut var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), Str
     Ok(())
 }
 
-fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
+fn parse_expr(local_vars: &VarMap, global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
     match expr {
         Expr::Literal(v) => {
             Ok(v)
         },
         Expr::Reference(r) => {
-            vars.get(&r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
+            local_vars.get(&r).or(global_vars.get(&r)).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
         },
         Expr::BinOp(op, left, right) => {
-            let left = parse_expr(&vars, *left)?;
-            let right = parse_expr(&vars, *right)?;
+            let left = parse_expr(&local_vars, &global_vars, *left)?;
+            let right = parse_expr(&local_vars, &global_vars, *right)?;
 
             let math = |left: f64, right: f64| {
                 match op {
@@ -135,8 +140,8 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         },
         Expr::Comparison(op, left, right) => {
-            let left = parse_expr(&vars, *left)?;
-            let right = parse_expr(&vars, *right)?;
+            let left = parse_expr(&local_vars, &global_vars, *left)?;
+            let right = parse_expr(&local_vars, &global_vars, *right)?;
 
             let compare_bools = |left: f64, right: f64| {
                 match op {
@@ -169,8 +174,8 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         },
         Expr::BoolChain(op, left, right) => {
-            let left = parse_expr(&vars, *left)?;
-            let right = parse_expr(&vars, *right)?;
+            let left = parse_expr(&local_vars, &global_vars, *left)?;
+            let right = parse_expr(&local_vars, &global_vars, *right)?;
 
             if let (&Value::Boolean(b1), &Value::Boolean(b2)) = (&left, &right) {
                 Ok(Value::Boolean(
@@ -184,7 +189,7 @@ fn parse_expr(vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         }
         Expr::UnOp(op, expr) => {
-            let expr = parse_expr(&vars, *expr)?;
+            let expr = parse_expr(&local_vars, &global_vars, *expr)?;
             match op {
                 UnaryOp::Not => {
                     if let &Value::Boolean(b) = &expr {
@@ -218,15 +223,13 @@ fn repl() -> i32 {
                         match single_line(&line) {
                             Ok(parsed) => {
                                 match  parsed {
-                                    Line::Statements(s) => {
-                                        for statement in s {
-                                            if let Err(e) = run_program(&mut var_map, vec![statement]) {
-                                                println!("{}", e);
-                                            }
+                                    Line::Statement(s) => {
+                                        if let Err(e) = run_program(&mut var_map, vec![s]) {
+                                            println!("{}", e);
                                         }
                                     },
                                     Line::Expression(e) => {
-                                        match parse_expr(&var_map, e) {
+                                        match parse_expr(&HashMap::new(), &var_map, e) {
                                             Ok(expr) => {
                                                 println!("{}", expr);
                                             },

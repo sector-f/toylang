@@ -3,13 +3,16 @@ use ast::*;
 pub ast -> Vec<Statement>
     = whitespace* s:statement* whitespace* { s }
 
-pub  single_line -> Line
-    = s:statement* whitespace* comment? { Line::Statements(s) }
+pub single_line -> Line
+    = s:statement whitespace* comment? { Line::Statement(s) }
     / e:expression whitespace* comment? { Line::Expression(e) }
 
 statement -> Statement
-    = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
-        Statement::AssignVar(ident, e)
+    = "global" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::GlobalVar(ident, e)
+    }
+    / "local" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
+        Statement::LocalVar(ident, e)
     }
     / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::If(cond, s)
@@ -66,7 +69,7 @@ boolean -> Value
 
 identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "let" / "print"
+keyword = "true" / "false" / "global" / "print" / "local"
 
 comment = #quiet<"//" .*>
 
