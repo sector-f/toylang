@@ -3,7 +3,7 @@ use std::fmt::{Display, Error, Formatter};
 
 #[derive(Debug)]
 pub enum Line {
-    Statement(Statement),
+    Statements(Vec<Statement>),
     Expression(Expr),
 }
 

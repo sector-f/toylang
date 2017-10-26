@@ -4,14 +4,14 @@ pub ast -> Vec<Statement>
     = whitespace* s:statement* whitespace* { s }
 
 pub  single_line -> Line
-    = s:statement whitespace* comment? { Line::Statement(s) }
+    = s:statement* whitespace* comment? { Line::Statements(s) }
     / e:expression whitespace* comment? { Line::Expression(e) }
 
 statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::AssignVar(ident, e)
     }
-    / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" {
+    / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::If(cond, s)
     }
     / "print" whitespace* e:expression whitespace* ";" whitespace* {

@@ -83,7 +83,6 @@ fn run_program(mut var_map: &mut VarMap, tree: Vec<Statement>) -> Result<(), Str
                 let variable = parse_expr(&var_map, e)?;
                 var_map.insert(s, variable);
             },
-
             Statement::If(condition, statements) => {
                 let condition = parse_expr(&var_map, condition)?;
                 if let Value::Boolean(b) = condition {
@@ -219,9 +218,11 @@ fn repl() -> i32 {
                         match single_line(&line) {
                             Ok(parsed) => {
                                 match  parsed {
-                                    Line::Statement(s) => {
-                                        if let Err(e) = run_program(&mut var_map, vec![s]) {
-                                            println!("{}", e);
+                                    Line::Statements(s) => {
+                                        for statement in s {
+                                            if let Err(e) = run_program(&mut var_map, vec![statement]) {
+                                                println!("{}", e);
+                                            }
                                         }
                                     },
                                     Line::Expression(e) => {
