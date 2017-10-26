@@ -71,7 +71,7 @@ identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text
 
 keyword = "true" / "false" / "global" / "print" / "local"
 
-comment = #quiet<"//" .*>
+comment = #quiet<"//" [^"\n\r"]*>
 
 number -> Value
     = s:$("-")? n:$(float) {
@@ -95,4 +95,4 @@ character
 
 EOF = #quiet<!.>
 
-whitespace = #quiet<[ \n\t]>
+whitespace = #quiet<[ \n\t] / comment>

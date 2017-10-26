@@ -1,2 +1,4 @@
-let foo = 3.5;
+global foo = 3.5;
 print foo+7;
+
+if true { print "quick brown fox"; print "lazy dog"; }
