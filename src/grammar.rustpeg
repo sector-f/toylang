@@ -11,6 +11,9 @@ statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::DeclareVar(ident, e)
     }
+    / e:expression whitespace* ";" whitespace* {
+        Statement::Expression(e)
+    }
     / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
         Statement::MutateVar(op, ident, e)
     }

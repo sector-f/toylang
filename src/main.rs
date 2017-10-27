@@ -120,6 +120,9 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                 },
             }
         },
+        Statement::Expression(expression) => {
+            eval_expr(&global_vars, &expression)?;
+        }
         Statement::If(if_s, elif_s, else_s) => {
             let if_cond = eval_expr(&global_vars, &if_s.e)?;
             if let Value::Boolean(b) = if_cond {
