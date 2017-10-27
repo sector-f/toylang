@@ -189,21 +189,27 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             let left = eval_expr(global_vars, left)?;
             let right = eval_expr(global_vars, right)?;
 
-            let math = |left: f64, right: f64| {
-                match *op {
-                    Op::Add => left + right,
-                    Op::Sub => left - right,
-                    Op::Mul => left * right,
-                    Op::Div => left / right,
-                    Op::Mod => left % right,
-                    Op::Exp => left.powf(right),
-                }
-            };
-
             if let (&Value::Num(n1), &Value::Num(n2)) = (&left, &right) {
-                Ok(Value::Num(math(n1, n2)))
+                Ok(Value::Num(
+                    match *op {
+                        Op::Add => n1 + n2,
+                        Op::Sub => n1 - n2,
+                        Op::Mul => n1 * n2,
+                        Op::Div => n1 / n2,
+                        Op::Mod => n1 % n2,
+                        Op::Exp => n1.powf(n2),
+                    }
+                ))
+            } else if let (&Value::String(ref left_val), &Value::String(ref right_val)) = (&left, &right) {
+                let new_val = match *op {
+                    Op::Add => format!("{}{}", left_val, right_val),
+                    _ => {
+                        return Err(format!("invalid operation ({} with {})", left.get_type(), right.get_type()));
+                    },
+                };
+                Ok(Value::String(new_val))
             } else {
-                Err(format!("invalid math ({} with {})", left.get_type(), right.get_type()))
+                Err(format!("invalid operation ({} with {})", left.get_type(), right.get_type()))
             }
         },
         Expr::Comparison(ref op, ref left, ref right) => {
