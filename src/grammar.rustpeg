@@ -17,6 +17,9 @@ statement -> Statement
     / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::If(cond, s)
     }
+    / "while" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
+        Statement::While(cond, s)
+    }
     / "print" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::Print(e)
     }
@@ -77,7 +80,7 @@ boolean -> Value
 
 identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "let" / "print"
+keyword = "true" / "false" / "let" / "print" / "while" / "if"
 
 comment = #quiet<"//" [^\n\r]*>
 

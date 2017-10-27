@@ -7,11 +7,12 @@ pub enum Line {
     Expression(Expr),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     DeclareVar(String, Expr),
     ShadowVar(AssignOp, String, Expr),
     If(Expr, Vec<Statement>),
+    While(Expr, Vec<Statement>),
     Print(Expr),
 }
 

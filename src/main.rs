@@ -56,18 +56,16 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
         },
     }
 
-    let mut global_vars = HashMap::new();
     match ast(&buf) {
         Ok(statements) => {
-            match run_program(&mut global_vars, statements) {
-                Ok(_) => {
-                    return 0;
-                },
-                Err(e) => {
+            let mut global_vars = HashMap::new();
+            for s in statements {
+                if let Err(e) = run_statement(&mut global_vars, s) {
                     eprintln!("Error: {}", e);
                     return 1;
-                },
+                }
             }
+            return 0;
         },
         Err(e) => {
             eprintln!("Syntax error: {}", e);
@@ -76,70 +74,84 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
     }
 }
 
-fn run_program(mut global_vars: &mut VarMap, tree: Vec<Statement>) -> Result<(), String> {
-    for statement in tree {
-        match statement {
-            Statement::DeclareVar(name, expr) => {
-                let value = parse_expr(&global_vars, expr)?;
-                global_vars.insert(name, value);
-            },
-            Statement::ShadowVar(op, name, expr) => {
-                if let None = global_vars.get(&name) {
-                    return Err(format!("undeclared variable: {}", name));
-                }
+fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(), String> {
+    match statement {
+        Statement::DeclareVar(name, expr) => {
+            let value = parse_expr(&global_vars, expr)?;
+            global_vars.insert(name, value);
+        },
+        Statement::ShadowVar(op, name, expr) => {
+            if let None = global_vars.get(&name) {
+                return Err(format!("undeclared variable: {}", name));
+            }
 
-                let old_value = global_vars.get(&name).unwrap().clone();
-                let rhs = parse_expr(&global_vars, expr)?;
+            let old_value = global_vars.get(&name).unwrap().clone();
+            let rhs = parse_expr(&global_vars, expr)?;
 
-                match op {
-                    AssignOp::Equals => {
-                        global_vars.insert(name, rhs);
-                    },
-                    _ => {
-                        if let (&Value::Num(old), &Value::Num(new)) = (&old_value, &rhs) {
-                            let new_value;
-                            match op {
-                                AssignOp::AddEq => {
-                                    new_value = old + new;
-                                },
-                                AssignOp::SubEq => {
-                                    new_value = old - new;
-                                },
-                                AssignOp::MulEq => {
-                                    new_value = old * new;
-                                },
-                                AssignOp::DivEq => {
-                                    new_value = old / new;
-                                },
-                                AssignOp::ModEq => {
-                                    new_value = old % new;
-                                },
-                                _ => unreachable!(),
-                            }
-                            global_vars.insert(name, Value::Num(new_value));
-                        } else {
-                            return Err(format!("= is only valid assignment for {}", old_value.get_type()));
+            match op {
+                AssignOp::Equals => {
+                    global_vars.insert(name, rhs);
+                },
+                _ => {
+                    if let (&Value::Num(old), &Value::Num(new)) = (&old_value, &rhs) {
+                        let new_value;
+                        match op {
+                            AssignOp::AddEq => {
+                                new_value = old + new;
+                            },
+                            AssignOp::SubEq => {
+                                new_value = old - new;
+                            },
+                            AssignOp::MulEq => {
+                                new_value = old * new;
+                            },
+                            AssignOp::DivEq => {
+                                new_value = old / new;
+                            },
+                            AssignOp::ModEq => {
+                                new_value = old % new;
+                            },
+                            _ => unreachable!(),
                         }
-                    },
+                        global_vars.insert(name, Value::Num(new_value));
+                    } else {
+                        return Err(format!("= is the only valid assignment operator for {}", old_value.get_type()));
+                    }
+                },
+            }
+        },
+        Statement::If(condition, statements) => {
+            let condition = parse_expr(&global_vars, condition)?;
+            if let Value::Boolean(b) = condition {
+                if b {
+                    for s in statements {
+                        run_statement(&mut global_vars, s)?;
+                    }
                 }
-            },
-            Statement::If(condition, statements) => {
-                let condition = parse_expr(&global_vars, condition)?;
+            } else {
+                return Err(format!("expected boolean, found {}", condition.get_type()));
+            }
+        },
+        Statement::While(condition, statements) => {
+            loop {
+                let condition = parse_expr(&global_vars, condition.clone())?;
                 if let Value::Boolean(b) = condition {
                     if b {
-                        if let Err(e) = run_program(&mut global_vars, statements) {
-                            return Err(e);
+                        for s in statements.clone() {
+                            run_statement(&mut global_vars, s)?;
                         }
+                    } else {
+                        break;
                     }
                 } else {
                     return Err(format!("expected boolean, found {}", condition.get_type()));
                 }
-            },
-            Statement::Print(e) => {
-                let variable = parse_expr(&global_vars, e)?;
-                println!("{}", variable);
-            },
-        }
+            }
+        },
+        Statement::Print(e) => {
+            let variable = parse_expr(&global_vars, e)?;
+            println!("{}", variable);
+        },
     }
 
     Ok(())
@@ -259,7 +271,7 @@ fn repl() -> i32 {
                             Ok(parsed) => {
                                 match  parsed {
                                     Line::Statement(s) => {
-                                        if let Err(e) = run_program(&mut var_map, vec![s]) {
+                                        if let Err(e) = run_statement(&mut var_map, s) {
                                             println!("{}", e);
                                         }
                                     },
