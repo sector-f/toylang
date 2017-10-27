@@ -77,7 +77,7 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
 fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(), String> {
     match statement {
         Statement::DeclareVar(name, expr) => {
-            let value = eval_expr(&global_vars, expr)?;
+            let value = eval_expr(&global_vars, &expr)?;
             global_vars.insert(name, value);
         },
         Statement::MutateVar(op, name, expr) => {
@@ -86,7 +86,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             }
 
             let old_value = global_vars.get(&name).unwrap().clone();
-            let rhs = eval_expr(&global_vars, expr)?;
+            let rhs = eval_expr(&global_vars, &expr)?;
 
             match op {
                 AssignOp::Equals => {
@@ -121,7 +121,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             }
         },
         Statement::If(if_s, elif_s, else_s) => {
-            let if_cond = eval_expr(&global_vars, if_s.e)?;
+            let if_cond = eval_expr(&global_vars, &if_s.e)?;
             if let Value::Boolean(b) = if_cond {
                 if b {
                     for s in if_s.s {
@@ -130,7 +130,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                     return Ok(());
                 } else if let Some(statements) = elif_s {
                     'else_if: for statement in statements {
-                        if let Value::Boolean(b) = eval_expr(&global_vars, statement.e)? {
+                        if let Value::Boolean(b) = eval_expr(&global_vars, &statement.e)? {
                             if b {
                                 for s in statement.s {
                                     run_statement(&mut global_vars, s)?;
@@ -154,7 +154,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
         },
         Statement::While(condition, statements) => {
             loop {
-                let condition = eval_expr(&global_vars, condition.clone())?;
+                let condition = eval_expr(&global_vars, &condition)?;
                 if let Value::Boolean(b) = condition {
                     if b {
                         for s in statements.clone() {
@@ -169,7 +169,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             }
         },
         Statement::Print(e) => {
-            let variable = eval_expr(&global_vars, e)?;
+            let variable = eval_expr(&global_vars, &e)?;
             println!("{}", variable);
         },
     }
@@ -177,20 +177,20 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
     Ok(())
 }
 
-fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
-    match expr {
-        Expr::Literal(v) => {
-            Ok(v)
+fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
+    match *expr {
+        Expr::Literal(ref v) => {
+            Ok(v.to_owned())
         },
-        Expr::Reference(r) => {
-            global_vars.get(&r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
+        Expr::Reference(ref r) => {
+            global_vars.get(&*r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
         },
-        Expr::BinOp(op, left, right) => {
-            let left = eval_expr(&global_vars, *left)?;
-            let right = eval_expr(&global_vars, *right)?;
+        Expr::BinOp(ref op, ref left, ref right) => {
+            let left = eval_expr(&global_vars, &left)?;
+            let right = eval_expr(&global_vars, &right)?;
 
             let math = |left: f64, right: f64| {
-                match op {
+                match *op {
                     Op::Add => left + right,
                     Op::Sub => left - right,
                     Op::Mul => left * right,
@@ -206,12 +206,12 @@ fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
                 Err(format!("invalid math ({} with {})", left.get_type(), right.get_type()))
             }
         },
-        Expr::Comparison(op, left, right) => {
-            let left = eval_expr(&global_vars, *left)?;
-            let right = eval_expr(&global_vars, *right)?;
+        Expr::Comparison(ref op, ref left, ref right) => {
+            let left = eval_expr(&global_vars, &left)?;
+            let right = eval_expr(&global_vars, &right)?;
 
             let compare_bools = |left: f64, right: f64| {
-                match op {
+                match *op {
                     CompOp::Equal => left == right,
                     CompOp::NotEq => left != right,
                     CompOp::Gt => left > right,
@@ -222,7 +222,7 @@ fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
             };
 
             let compare_strs = |left: &str, right: &str| {
-                match op {
+                match *op {
                     CompOp::Equal => left == right,
                     CompOp::NotEq => left != right,
                     CompOp::Gt => left > right,
@@ -240,13 +240,13 @@ fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
                 Err(format!("invalid comparison ({} with {})", left.get_type(), right.get_type()))
             }
         },
-        Expr::BoolChain(op, left, right) => {
-            let left = eval_expr(&global_vars, *left)?;
-            let right = eval_expr(&global_vars, *right)?;
+        Expr::BoolChain(ref op, ref left, ref right) => {
+            let left = eval_expr(&global_vars, &left)?;
+            let right = eval_expr(&global_vars, &right)?;
 
             if let (&Value::Boolean(b1), &Value::Boolean(b2)) = (&left, &right) {
                 Ok(Value::Boolean(
-                    match op {
+                    match *op {
                         BoolLogic::And => b1 && b2,
                         BoolLogic::Or => b1 || b2,
                     }
@@ -255,9 +255,9 @@ fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
                 Err(format!("invalid boolean logic (expected two booleans, found {} and {})", left.get_type(), right.get_type()))
             }
         }
-        Expr::UnOp(op, expr) => {
-            let expr = eval_expr(&global_vars, *expr)?;
-            match op {
+        Expr::UnOp(ref op, ref expr) => {
+            let expr = eval_expr(&global_vars, &expr)?;
+            match *op {
                 UnaryOp::Not => {
                     if let &Value::Boolean(b) = &expr {
                         Ok(Value::Boolean(!b))
@@ -296,7 +296,7 @@ fn repl() -> i32 {
                                         }
                                     },
                                     Line::Expression(e) => {
-                                        match eval_expr(&var_map, e) {
+                                        match eval_expr(&var_map, &e) {
                                             Ok(expr) => {
                                                 println!("{}", expr);
                                             },
