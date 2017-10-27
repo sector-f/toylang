@@ -10,7 +10,7 @@ pub enum Line {
 #[derive(Debug, Clone)]
 pub enum Statement {
     DeclareVar(String, Expr),
-    ShadowVar(AssignOp, String, Expr),
+    MutateVar(AssignOp, String, Expr),
     If(IfStatement, Option<Vec<IfStatement>>, Option<Vec<Statement>>), // (If, Else If, Else)
     While(Expr, Vec<Statement>),
     Print(Expr),

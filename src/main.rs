@@ -77,16 +77,16 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
 fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(), String> {
     match statement {
         Statement::DeclareVar(name, expr) => {
-            let value = parse_expr(&global_vars, expr)?;
+            let value = eval_expr(&global_vars, expr)?;
             global_vars.insert(name, value);
         },
-        Statement::ShadowVar(op, name, expr) => {
+        Statement::MutateVar(op, name, expr) => {
             if let None = global_vars.get(&name) {
                 return Err(format!("undeclared variable: {}", name));
             }
 
             let old_value = global_vars.get(&name).unwrap().clone();
-            let rhs = parse_expr(&global_vars, expr)?;
+            let rhs = eval_expr(&global_vars, expr)?;
 
             match op {
                 AssignOp::Equals => {
@@ -121,7 +121,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             }
         },
         Statement::If(if_s, elif_s, else_s) => {
-            let if_cond = parse_expr(&global_vars, if_s.e)?;
+            let if_cond = eval_expr(&global_vars, if_s.e)?;
             if let Value::Boolean(b) = if_cond {
                 if b {
                     for s in if_s.s {
@@ -130,7 +130,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                     return Ok(());
                 } else if let Some(statements) = elif_s {
                     'else_if: for statement in statements {
-                        if let Value::Boolean(b) = parse_expr(&global_vars, statement.e)? {
+                        if let Value::Boolean(b) = eval_expr(&global_vars, statement.e)? {
                             if b {
                                 for s in statement.s {
                                     run_statement(&mut global_vars, s)?;
@@ -154,7 +154,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
         },
         Statement::While(condition, statements) => {
             loop {
-                let condition = parse_expr(&global_vars, condition.clone())?;
+                let condition = eval_expr(&global_vars, condition.clone())?;
                 if let Value::Boolean(b) = condition {
                     if b {
                         for s in statements.clone() {
@@ -169,7 +169,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             }
         },
         Statement::Print(e) => {
-            let variable = parse_expr(&global_vars, e)?;
+            let variable = eval_expr(&global_vars, e)?;
             println!("{}", variable);
         },
     }
@@ -177,7 +177,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
     Ok(())
 }
 
-fn parse_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
+fn eval_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
     match expr {
         Expr::Literal(v) => {
             Ok(v)
@@ -186,8 +186,8 @@ fn parse_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
             global_vars.get(&r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
         },
         Expr::BinOp(op, left, right) => {
-            let left = parse_expr(&global_vars, *left)?;
-            let right = parse_expr(&global_vars, *right)?;
+            let left = eval_expr(&global_vars, *left)?;
+            let right = eval_expr(&global_vars, *right)?;
 
             let math = |left: f64, right: f64| {
                 match op {
@@ -207,8 +207,8 @@ fn parse_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         },
         Expr::Comparison(op, left, right) => {
-            let left = parse_expr(&global_vars, *left)?;
-            let right = parse_expr(&global_vars, *right)?;
+            let left = eval_expr(&global_vars, *left)?;
+            let right = eval_expr(&global_vars, *right)?;
 
             let compare_bools = |left: f64, right: f64| {
                 match op {
@@ -241,8 +241,8 @@ fn parse_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         },
         Expr::BoolChain(op, left, right) => {
-            let left = parse_expr(&global_vars, *left)?;
-            let right = parse_expr(&global_vars, *right)?;
+            let left = eval_expr(&global_vars, *left)?;
+            let right = eval_expr(&global_vars, *right)?;
 
             if let (&Value::Boolean(b1), &Value::Boolean(b2)) = (&left, &right) {
                 Ok(Value::Boolean(
@@ -256,7 +256,7 @@ fn parse_expr(global_vars: &VarMap, expr: Expr) -> Result<Value, String> {
             }
         }
         Expr::UnOp(op, expr) => {
-            let expr = parse_expr(&global_vars, *expr)?;
+            let expr = eval_expr(&global_vars, *expr)?;
             match op {
                 UnaryOp::Not => {
                     if let &Value::Boolean(b) = &expr {
@@ -296,7 +296,7 @@ fn repl() -> i32 {
                                         }
                                     },
                                     Line::Expression(e) => {
-                                        match parse_expr(&var_map, e) {
+                                        match eval_expr(&var_map, e) {
                                             Ok(expr) => {
                                                 println!("{}", expr);
                                             },

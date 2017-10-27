@@ -12,7 +12,7 @@ statement -> Statement
         Statement::DeclareVar(ident, e)
     }
     / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
-        Statement::ShadowVar(op, ident, e)
+        Statement::MutateVar(op, ident, e)
     }
     / if_s:if_statement elif_s:elif_statement* else_s:else_statement? {
         let else_if = if elif_s.len() == 0 {
