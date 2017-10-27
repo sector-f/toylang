@@ -120,16 +120,36 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                 },
             }
         },
-        Statement::If(condition, statements) => {
-            let condition = parse_expr(&global_vars, condition)?;
-            if let Value::Boolean(b) = condition {
+        Statement::If(if_s, elif_s, else_s) => {
+            let if_cond = parse_expr(&global_vars, if_s.e)?;
+            if let Value::Boolean(b) = if_cond {
                 if b {
+                    for s in if_s.s {
+                        run_statement(&mut global_vars, s)?;
+                    }
+                    return Ok(());
+                } else if let Some(statements) = elif_s {
+                    'else_if: for statement in statements {
+                        if let Value::Boolean(b) = parse_expr(&global_vars, statement.e)? {
+                            if b {
+                                for s in statement.s {
+                                    run_statement(&mut global_vars, s)?;
+                                }
+                                return Ok(());
+                            }
+                        } else {
+                            return Err(format!("expected boolean, found {}", if_cond.get_type()));
+                        }
+                    }
+                }
+                if let Some(statements) = else_s {
                     for s in statements {
                         run_statement(&mut global_vars, s)?;
                     }
+                    return Ok(());
                 }
             } else {
-                return Err(format!("expected boolean, found {}", condition.get_type()));
+                return Err(format!("expected boolean, found {}", if_cond.get_type()));
             }
         },
         Statement::While(condition, statements) => {

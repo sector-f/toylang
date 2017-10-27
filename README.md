@@ -13,7 +13,7 @@ aim to be actually useful.
 * Variable assignment
 * Variable printing
 * Boolean logic (comparison of numbers/strings)
-* `if` statements
+* `if` / `elif` / `else` statements
 * `while` loops
 * Interactive REPL
 

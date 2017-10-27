@@ -11,9 +11,15 @@ pub enum Line {
 pub enum Statement {
     DeclareVar(String, Expr),
     ShadowVar(AssignOp, String, Expr),
-    If(Expr, Vec<Statement>),
+    If(IfStatement, Option<Vec<IfStatement>>, Option<Vec<Statement>>), // (If, Else If, Else)
     While(Expr, Vec<Statement>),
     Print(Expr),
+}
+
+#[derive(Debug, Clone)]
+pub struct IfStatement {
+    pub e: Expr,
+    pub s: Vec<Statement>
 }
 
 #[derive(Debug, Clone)]

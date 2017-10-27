@@ -14,14 +14,40 @@ statement -> Statement
     / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
         Statement::ShadowVar(op, ident, e)
     }
-    / "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
-        Statement::If(cond, s)
+    / if_s:if_statement elif_s:elif_statement* else_s:else_statement? {
+        let else_if = if elif_s.len() == 0 {
+            None
+        } else {
+            Some(elif_s)
+        };
+        Statement::If(if_s, else_if, else_s)
     }
     / "while" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::While(cond, s)
     }
     / "print" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::Print(e)
+    }
+
+if_statement -> IfStatement
+    = "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
+        IfStatement {
+            e: cond,
+            s: s,
+        }
+    }
+
+elif_statement -> IfStatement
+    = "elif" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
+        IfStatement {
+            e: cond,
+            s: s,
+        }
+    }
+
+else_statement -> Vec<Statement>
+    = "else" whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
+        s
     }
 
 expression -> Expr
@@ -80,7 +106,7 @@ boolean -> Value
 
 identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "let" / "print" / "while" / "if"
+keyword = "true" / "false" / "let" / "print" / "while" / "if" / "elif" / "else"
 
 comment = #quiet<"//" [^\n\r]*>
 
