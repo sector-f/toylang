@@ -183,11 +183,11 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             Ok(v.to_owned())
         },
         Expr::Reference(ref r) => {
-            global_vars.get(&*r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", &r))
+            global_vars.get(r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
         },
         Expr::BinOp(ref op, ref left, ref right) => {
-            let left = eval_expr(&global_vars, &left)?;
-            let right = eval_expr(&global_vars, &right)?;
+            let left = eval_expr(global_vars, left)?;
+            let right = eval_expr(global_vars, right)?;
 
             let math = |left: f64, right: f64| {
                 match *op {
@@ -207,8 +207,8 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             }
         },
         Expr::Comparison(ref op, ref left, ref right) => {
-            let left = eval_expr(&global_vars, &left)?;
-            let right = eval_expr(&global_vars, &right)?;
+            let left = eval_expr(global_vars, left)?;
+            let right = eval_expr(global_vars, right)?;
 
             let compare_bools = |left: f64, right: f64| {
                 match *op {
@@ -241,8 +241,8 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             }
         },
         Expr::BoolChain(ref op, ref left, ref right) => {
-            let left = eval_expr(&global_vars, &left)?;
-            let right = eval_expr(&global_vars, &right)?;
+            let left = eval_expr(global_vars, left)?;
+            let right = eval_expr(global_vars, right)?;
 
             if let (&Value::Boolean(b1), &Value::Boolean(b2)) = (&left, &right) {
                 Ok(Value::Boolean(
@@ -256,7 +256,7 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             }
         }
         Expr::UnOp(ref op, ref expr) => {
-            let expr = eval_expr(&global_vars, &expr)?;
+            let expr = eval_expr(global_vars, expr)?;
             match *op {
                 UnaryOp::Not => {
                     if let &Value::Boolean(b) = &expr {
