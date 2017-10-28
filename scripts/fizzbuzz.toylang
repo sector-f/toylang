@@ -1,7 +1,11 @@
+// Set variable
 let i = 1;
+
+// While loop
 while i <= 100 {
+	// Modulo operation
 	if i % 15 == 0 {
-		print "FizzBuzz";
+		print "FizzBuzz"; // Print statement
 	} elif i % 3 == 0 {
 		print "Fizz";
 	} elif i % 5 == 0 {
