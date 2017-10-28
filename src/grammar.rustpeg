@@ -54,10 +54,8 @@ else_statement -> Vec<Statement>
     }
 
 expression -> Expr
-= whitespace* var:atom "[" whitespace* index:atom whitespace* "]" whitespace* {
-    Expr::Index(Box::new(var), Box::new(index))
-}
-/ "!" whitespace* e:atom { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
+= i:index { i }
+/ "!" whitespace* e:(index / atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 / #infix<atom> {
     #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
     #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
@@ -87,6 +85,11 @@ assign_op -> AssignOp
     / "*=" { AssignOp::MulEq }
     / "/=" { AssignOp::DivEq }
     / "%=" { AssignOp::ModEq }
+
+index -> Expr
+    = var:atom "[" whitespace* index:atom whitespace* "]" {
+        Expr::Index(Box::new(var), Box::new(index))
+    }
 
 atom -> Expr
     = "(" e:expression ")" { e }
