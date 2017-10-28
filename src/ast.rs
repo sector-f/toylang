@@ -27,6 +27,7 @@ pub struct IfStatement {
 pub enum Expr {
     Literal(Value),
     Reference(String),
+    Index(Box<Expr>, usize),
     BinOp(Op, Box<Expr>, Box<Expr>),
     Comparison(CompOp, Box<Expr>, Box<Expr>),
     BoolChain(BoolLogic, Box<Expr>, Box<Expr>),

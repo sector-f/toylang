@@ -188,6 +188,23 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
         Expr::Reference(ref r) => {
             global_vars.get(r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
         },
+        Expr::Index(ref expression, ref index) => {
+            let var = eval_expr(global_vars, expression)?;
+            let index = index.to_owned();
+
+            match var {
+                Value::Array(ref values) => {
+                    if let Some(item) = values.get(index) {
+                        Ok(item.clone())
+                    } else {
+                        Err(format!("attempted to access index {} of array with length of {}", index, values.len()))
+                    }
+                },
+                _ => {
+                    Err(format!("attempted to index a {}", var.get_type()))
+                }
+            }
+        },
         Expr::BinOp(ref op, ref left, ref right) => {
             let left = eval_expr(global_vars, left)?;
             let right = eval_expr(global_vars, right)?;

@@ -18,7 +18,6 @@ aim to be actually useful.
 * Interactive REPL
 
 ## To-Do
-* Array indices
 * `for` loops
 * `exit` command
 * Functions

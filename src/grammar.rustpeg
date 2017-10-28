@@ -54,7 +54,11 @@ else_statement -> Vec<Statement>
     }
 
 expression -> Expr
-= "!" whitespace* e:atom { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
+= whitespace* e:atom "[" whitespace* i:$(digit+) whitespace* "]" whitespace* {
+    let index = i.parse::<usize>().unwrap();
+    Expr::Index(Box::new(e), index)
+}
+/ "!" whitespace* e:atom { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 / #infix<atom> {
     #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
     #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
