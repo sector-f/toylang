@@ -109,7 +109,7 @@ reference -> String // Variable lookup
     = ident:identifier { ident }
 
 array -> Value
-    = "[" v:(value ** ("," whitespace*)) "]" { Value::Array(v) }
+    = "[" whitespace* v:(value ** (whitespace* "," whitespace*)) whitespace* "]" { Value::Array(v) }
 
 string -> Value
     // To-Do: Make escapes work
