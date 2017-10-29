@@ -19,7 +19,6 @@ aim to be actually useful.
 
 ## To-Do
 * `for` loops
-* `exit` command
 * Functions
 * Type conversion (at least `string` to other types)
 * Read script's positional parameters

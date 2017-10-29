@@ -175,6 +175,15 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             let variable = eval_expr(&global_vars, &e)?;
             println!("{}", variable);
         },
+        Statement::Exit(e) => {
+            let status = eval_expr(&global_vars, &e)?;
+            if let Value::Num(exit_val) = status {
+                exit(exit_val as i32);
+            } else {
+                eprintln!("tried to exit with {} (number required)", status.get_type());
+                exit(0);
+            }
+        },
     }
 
     Ok(())
