@@ -14,7 +14,8 @@ pub enum Statement {
     Expression(Expr),
     If(IfStatement, Option<Vec<IfStatement>>, Option<Vec<Statement>>), // (If, Else If, Else)
     While(Expr, Vec<Statement>),
-    Print(Expr),
+    Print(Vec<Expr>),
+    Println(Vec<Expr>),
     Exit(Expr),
 }
 

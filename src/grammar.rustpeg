@@ -28,13 +28,25 @@ statement -> Statement
     / "while" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::While(cond, s)
     }
-    / "print" whitespace+ e:expression whitespace* ";" whitespace* {
-        Statement::Print(e)
+    / "println" e:expression_list whitespace* ";" whitespace* {
+        match e {
+            Some(exprs) => Statement::Println(exprs),
+            None => Statement::Println(Vec::new()),
+        }
     }
-
+    / "print" e:expression_list whitespace* ";" whitespace* {
+        match e {
+            Some(exprs) => Statement::Print(exprs),
+            None => Statement::Print(Vec::new()),
+        }
+    }
     / "exit" whitespace+ e:expression whitespace* ";" whitespace* {
         Statement::Exit(e)
     }
+
+expression_list -> Option<Vec<Expr>>
+    = whitespace+ e:expression ** (whitespace* "," whitespace*) { Some(e) }
+    / whitespace* { None }
 
 if_statement -> IfStatement
     = "if" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
@@ -125,7 +137,7 @@ boolean -> Value
 
 identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "let" / "print" / "while" / "if" / "elif" / "else" / "exit"
+keyword = "true" / "false" / "let" / "print" / "println" / "while" / "if" / "elif" / "else" / "exit"
 
 comment = #quiet<"//" [^\n\r]*>
 

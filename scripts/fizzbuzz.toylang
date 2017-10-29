@@ -5,13 +5,13 @@ let i = 1;
 while i <= 100 {
 	// Modulo operation
 	if i % 15 == 0 {
-		print "FizzBuzz"; // Print statement
+		println "FizzBuzz"; // Print statement
 	} elif i % 3 == 0 {
-		print "Fizz";
+		println "Fizz";
 	} elif i % 5 == 0 {
-		print "Buzz";
+		println "Buzz";
 	} else {
-		print i;
+		println i;
 	}
 	i += 1;
 }

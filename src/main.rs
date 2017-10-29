@@ -6,7 +6,7 @@ use liner::{Buffer, Context, KeyBindings};
 use std::collections::HashMap;
 use std::env::args_os;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write, stdout};
 use std::path::Path;
 use std::process::exit;
 
@@ -171,9 +171,20 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                 }
             }
         },
-        Statement::Print(e) => {
-            let variable = eval_expr(&global_vars, &e)?;
-            println!("{}", variable);
+        Statement::Print(exprs) => {
+            let values = exprs.into_iter().map(|expr| eval_expr(&global_vars, &expr)).collect::<Result<Vec<Value>, _>>()?;
+            for val in values {
+                let _ = stdout().write_all(val.to_string().as_bytes());
+            }
+            let _ = stdout().flush();
+        },
+        Statement::Println(exprs) => {
+            let values = exprs.into_iter().map(|expr| eval_expr(&global_vars, &expr)).collect::<Result<Vec<Value>, _>>()?;
+            for val in values {
+                let _ = stdout().write_all(format!("{}", val).as_bytes());
+            }
+            let _ = stdout().write_all("\n".as_bytes());
+            let _ = stdout().flush();
         },
         Statement::Exit(e) => {
             let status = eval_expr(&global_vars, &e)?;
