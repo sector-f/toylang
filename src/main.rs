@@ -20,24 +20,22 @@ type VarMap = HashMap<String, Value>;
 
 fn main() {
     let args = args_os().skip(1).collect::<Vec<_>>();
+    let filename = &args[0].clone();
+    let parameters = args.iter().map(|s| s.to_string_lossy().into_owned()).collect::<Vec<_>>();
     let exit_val;
 
     match args.len() {
         0 => {
             exit_val = repl();
         },
-        1 => {
-            exit_val = run_script(&args[0]);
-        }
         _ => {
-            eprintln!("Usage: toylang [FILE]");
-            exit_val = 1;
+            exit_val = run_script(filename, parameters);
         },
     }
     exit(exit_val);
 }
 
-fn run_script<P: AsRef<Path>>(path: P) -> i32 {
+fn run_script<P: AsRef<Path>>(path: P, arguments: Vec<String>) -> i32 {
     let path = path.as_ref();
     let mut file = match File::open(path) {
         Ok(file) => file,
@@ -59,6 +57,8 @@ fn run_script<P: AsRef<Path>>(path: P) -> i32 {
     match ast(&buf) {
         Ok(statements) => {
             let mut global_vars = HashMap::new();
+            let arg_values = arguments.into_iter().map(|s| Value::String(s)).collect();
+            global_vars.insert("ARGV".to_owned(), Value::Array(arg_values));
             for s in statements {
                 if let Err(e) = run_statement(&mut global_vars, s) {
                     eprintln!("Error: {}", e);
