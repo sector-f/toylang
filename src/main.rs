@@ -19,16 +19,16 @@ use ast::*;
 type VarMap = HashMap<String, Value>;
 
 fn main() {
-    let args = args_os().skip(1).collect::<Vec<_>>();
-    let filename = &args[0].clone();
+    let args = args_os().collect::<Vec<_>>();
     let parameters = args.iter().map(|s| s.to_string_lossy().into_owned()).collect::<Vec<_>>();
     let exit_val;
 
     match args.len() {
-        0 => {
+        0 | 1 => {
             exit_val = repl();
         },
         _ => {
+            let filename = &args[1].clone();
             exit_val = run_script(filename, parameters);
         },
     }
