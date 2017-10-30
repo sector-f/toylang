@@ -37,7 +37,11 @@ mod tests {
     fn eval_arrays() {
         assert!(expression("foo[0]").is_ok());
         assert!(expression("foo[bar]").is_ok());
+
         assert!(expression("[1,2,3][0]").is_ok());
+        assert!(expression("[[1,2], [foo, bar]][0][1]").is_ok());
+        assert!(expression("foo[0][1]").is_ok());
+
         assert!(expression("[bar][0]").is_ok());
         assert!(expression("[bar][2 + baz]").is_ok());
     }

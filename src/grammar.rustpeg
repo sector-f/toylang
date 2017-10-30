@@ -116,9 +116,20 @@ negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 
 index -> Expr
-    = var:atom "[" whitespace* index:expression whitespace* "]" {
-        Expr::Index(Box::new(var), Box::new(index))
+    = var:atom b:brackets+ {
+        let first = b[0].clone();
+        b.into_iter()
+            .skip(1)
+            .fold(
+                Expr::Index(Box::new(var), Box::new(first)),
+                |prev, next| {
+                    Expr::Index(Box::new(prev), Box::new(next))
+                }
+            )
     }
+
+brackets -> Expr
+    = "[" whitespace* e:expression whitespace* "]" { e }
 
 pub atom -> Expr
     = "(" e:expression ")" { e }
