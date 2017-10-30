@@ -98,7 +98,8 @@ expression -> Expr
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
 }
-/ a:array { a }
+// / a:array { a }
+// / sa:super_atom { sa }
 
 assign_op -> AssignOp
     = "="  { AssignOp::Equals }
@@ -109,25 +110,26 @@ assign_op -> AssignOp
     / "%=" { AssignOp::ModEq }
 
 super_atom -> Expr
-= n:negation { n }
-/ i:index { i }
-/ a:atom { a }
+    = i:index { i }
+    / n:negation { n }
+    / a:atom { a }
 
 negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 
 index -> Expr
-    = var:atom "[" whitespace* index:(expression) whitespace* "]" {
+    = var:atom "[" whitespace* index:expression whitespace* "]" {
         Expr::Index(Box::new(var), Box::new(index))
     }
 
 atom -> Expr
     = "(" e:expression ")" { e }
-    / v:value { Expr::Literal(v) }
+    / v:value { v }
     / r:reference { Expr::Reference(r) }
 
-pub value -> Value
-    = v:(number/string/boolean) { v }
+pub value -> Expr
+    = a:array { a }
+    / v:(number/string/boolean) { Expr::Literal(v) }
 
 reference -> String // Variable lookup
     = ident:identifier { ident }
