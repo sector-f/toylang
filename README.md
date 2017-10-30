@@ -20,6 +20,5 @@ aim to be actually useful.
 ## To-Do
 * `for` loops
 * Functions
-* Type conversion (at least `string` to other types)
 * Read line of input (e.g. Bash's `read` builtin)
 * Pick a better name

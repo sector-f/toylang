@@ -186,6 +186,10 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             let _ = stdout().write_all("\n".as_bytes());
             let _ = stdout().flush();
         },
+        Statement::Typeof(expr) => {
+            let e = eval_expr(&global_vars, &expr)?;
+            println!("{}", e.get_type());
+        },
         Statement::Exit(e) => {
             let status = eval_expr(&global_vars, &e)?;
             if let Value::Num(exit_val) = status {
@@ -207,6 +211,70 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
         },
         Expr::Reference(ref r) => {
             global_vars.get(r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
+        },
+        Expr::Typecast(ref expression, ref new_type) => {
+            let var = eval_expr(global_vars, expression)?;
+            let new_type = eval_expr(global_vars, new_type)?;
+
+            if let &Value::Type(ref t) = &new_type {
+                match var {
+                    Value::Num(n) => {
+                        if let &Type::String = t {
+                            return Ok(Value::String(n.to_string()));
+                        }
+                    },
+                    Value::Boolean(b) => {
+                        if let &Type::String = t {
+                            return Ok(Value::String(b.to_string()));
+                        }
+                    },
+                    Value::Type(ref t) => {
+                        if let &Type::String = t {
+                            return Ok(Value::String(t.to_string()));
+                        }
+                    },
+                    Value::String(ref s) => {
+                        match t {
+                            &Type::Boolean => {
+                                match s.parse::<bool>() {
+                                    Ok(b) => {
+                                        return Ok(Value::Boolean(b));
+                                    },
+                                    Err(e) => {
+                                        return Err(e.to_string());
+                                    },
+                                }
+                            },
+                            &Type::Type => {
+                                match type_ident(&s) {
+                                    Ok(t) => {
+                                        return Ok(Value::Type(t));
+                                    },
+                                    Err(e) => {
+                                        return Err(e.to_string());
+                                    },
+                                }
+                            }
+                            &Type::Num => {
+                                match s.parse::<f64>() {
+                                    Ok(n) => {
+                                        return Ok(Value::Num(n));
+                                    },
+                                    Err(e) => {
+                                        return Err(e.to_string());
+                                    },
+                                }
+                            },
+                            _ => {},
+                        }
+                    },
+                    Value::Array(ref _a) => {},
+                }
+
+                return Err(format!("invalid typecast: {} to {}", var.get_type(), new_type));
+            } else {
+                return Err(format!("expected type, found {}", new_type.get_type()))
+            }
         },
         Expr::Array(ref exprs) => {
             let mut array = Vec::new();

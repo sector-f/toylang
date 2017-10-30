@@ -16,6 +16,7 @@ pub enum Statement {
     While(Expr, Vec<Statement>),
     Print(Vec<Expr>),
     Println(Vec<Expr>),
+    Typeof(Box<Expr>),
     Exit(Expr),
 }
 
@@ -29,6 +30,7 @@ pub struct IfStatement {
 pub enum Expr {
     Literal(Value),
     Reference(String),
+    Typecast(Box<Expr>, Box<Expr>),
     Array(Vec<Expr>),
     Index(Box<Expr>, Box<Expr>),
     BinOp(Op, Box<Expr>, Box<Expr>),
@@ -79,20 +81,44 @@ pub enum UnaryOp {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Type {
+    Num,
+    String,
+    Boolean,
+    Array,
+    Type,
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        let text = match *self {
+            Type::Num => "num",
+            Type::String => "string",
+            Type::Boolean => "bool",
+            Type::Array => "array",
+            Type::Type => "type",
+        };
+
+        write!(f, "{}", text)
+    }
+}
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Num(f64),
     String(String),
     Boolean(bool),
     Array(Vec<Value>),
+    Type(Type),
 }
 
 impl Value {
-    pub fn get_type(&self) -> &str {
+    pub fn get_type(&self) -> Type {
         match *self {
-            Value::Num(_) => "number",
-            Value::String(_) => "string",
-            Value::Boolean(_) => "boolean",
-            Value::Array(_) => "array",
+            Value::Num(_) => Type::Num,
+            Value::String(_) => Type::String,
+            Value::Boolean(_) => Type::Boolean,
+            Value::Array(_) => Type::Array,
+            Value::Type(_) => Type::Type,
         }
     }
 }
@@ -100,13 +126,14 @@ impl Value {
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let text = match *self {
-            Value::Num(num) => format!("{}", num),
-            Value::String(ref string) => format!("{}", string),
-            Value::Boolean(b) => format!("{}", b),
+            Value::Num(num) => num.to_string(),
+            Value::String(ref string) => string.to_string(),
+            Value::Boolean(b) => b.to_string(),
             Value::Array(ref vec) => {
                 let list = vec.iter().format_with(", ", |item, f| f(&format_args!("{}", item)));
                 format!("[{}]", list)
             },
+            Value::Type(ref t) => t.to_string(),
         };
 
         write!(f, "{}", text)

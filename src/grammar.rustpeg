@@ -37,6 +37,9 @@ pub statement -> Statement
             None => Statement::Print(Vec::new()),
         }
     }
+    / "typeof" whitespace+ e:expression ";" whitespace* {
+        Statement::Typeof(Box::new(e))
+    }
     / "exit" e:maybe_expression whitespace* ";" whitespace* {
         match e {
             Some(val) =>  Statement::Exit(val),
@@ -97,6 +100,7 @@ pub expression -> Expr
        x (whitespace* "%"  whitespace*) y { Expr::BinOp(Op::Mod, Box::new(x), Box::new(y)) }
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
+    #R x (whitespace+ "as" whitespace+) y { Expr::Typecast(Box::new(x), Box::new(y)) }
 }
 
 assign_op -> AssignOp
@@ -110,6 +114,7 @@ assign_op -> AssignOp
 pub super_atom -> Expr
     = i:index { i }
     / n:negation { n }
+    / t:type_ident { Expr::Literal(Value::Type(t)) }
     / a:atom { a }
 
 negation -> Expr
@@ -139,6 +144,14 @@ pub atom -> Expr
 pub value -> Expr
     = a:array { a }
     / v:(number/string/boolean) { Expr::Literal(v) }
+
+pub type_ident -> Type
+    = "num" { Type::Num }
+    / "string" { Type::String }
+    / "bool" { Type::Boolean }
+    / "array" { Type::Array }
+    / "type" { Type::Type }
+
 
 reference -> String // Variable lookup
     = ident:identifier { ident }

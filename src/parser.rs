@@ -58,4 +58,13 @@ mod tests {
             Expr::Literal(Value::Boolean(false))
         );
     }
+
+    #[test]
+    fn typecast() {
+        assert!(expression("5 as string").is_ok());
+        assert!(expression("5 + 5 as string").is_ok());
+        assert!(expression("5 as string + 5").is_ok());
+        assert!(expression("ARGV[1] as num").is_ok());
+        assert!(expression("![true][0] as string").is_ok());
+    }
 }
