@@ -208,6 +208,13 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
         Expr::Reference(ref r) => {
             global_vars.get(r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
         },
+        Expr::Array(ref exprs) => {
+            let mut array = Vec::new();
+            for e in exprs {
+                array.push(eval_expr(global_vars, e)?);
+            }
+            Ok(Value::Array(array))
+        }
         Expr::Index(ref expression, ref index) => {
             let var = eval_expr(global_vars, expression)?;
             let index = eval_expr(global_vars, index)?;

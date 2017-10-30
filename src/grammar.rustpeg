@@ -11,9 +11,6 @@ statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::DeclareVar(ident, e)
     }
-    / e:expression whitespace* ";" whitespace* {
-        Statement::Expression(e)
-    }
     / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
         Statement::MutateVar(op, ident, e)
     }
@@ -45,6 +42,9 @@ statement -> Statement
             Some(val) =>  Statement::Exit(val),
             None => Statement::Exit(Expr::Literal(Value::Num(0.0))),
         }
+    }
+    / e:expression whitespace* ";" whitespace* {
+        Statement::Expression(e)
     }
 
 expression_list -> Option<Vec<Expr>>
@@ -98,6 +98,7 @@ expression -> Expr
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
 }
+/ a:array { a }
 
 assign_op -> AssignOp
     = "="  { AssignOp::Equals }
@@ -126,13 +127,13 @@ atom -> Expr
     / r:reference { Expr::Reference(r) }
 
 pub value -> Value
-    = v:(number/string/boolean/array) { v }
+    = v:(number/string/boolean) { v }
 
 reference -> String // Variable lookup
     = ident:identifier { ident }
 
-array -> Value
-    = "[" whitespace* v:(value ** (whitespace* "," whitespace*)) whitespace* "]" { Value::Array(v) }
+array -> Expr
+    = "[" whitespace* e:(expression ** (whitespace* "," whitespace*)) whitespace* "]" { Expr::Array(e) }
 
 string -> Value
     // To-Do: Make escapes work
@@ -142,9 +143,9 @@ boolean -> Value
     = "true" { Value::Boolean(true) }
     / "false" { Value::Boolean(false) }
 
-identifier -> String = !keyword text:$(character+ (character/digit/"_")*) { text.to_string() }
+identifier -> String = text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-keyword = "true" / "false" / "let" / "print" / "println" / "while" / "if" / "elif" / "else" / "exit"
+// keyword = "true" / "false" / "let" / "print" / "println" / "while" / "if" / "elif" / "else" / "exit"
 
 comment = #quiet<"//" [^\n\r]*>
 
