@@ -40,12 +40,19 @@ statement -> Statement
             None => Statement::Print(Vec::new()),
         }
     }
-    / "exit" whitespace+ e:expression whitespace* ";" whitespace* {
-        Statement::Exit(e)
+    / "exit" e:maybe_expression whitespace* ";" whitespace* {
+        match e {
+            Some(val) =>  Statement::Exit(val),
+            None => Statement::Exit(Expr::Literal(Value::Num(0.0))),
+        }
     }
 
 expression_list -> Option<Vec<Expr>>
     = whitespace+ e:expression ** (whitespace* "," whitespace*) { Some(e) }
+    / whitespace* { None }
+
+maybe_expression -> Option<Expr>
+    = whitespace+ e:expression whitespace* { Some(e) }
     / whitespace* { None }
 
 if_statement -> IfStatement

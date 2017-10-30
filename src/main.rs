@@ -327,41 +327,32 @@ fn repl() -> i32 {
     context.completer = None;
     context.key_bindings = KeyBindings::Emacs;
 
-    println!("Type `quit` to quit");
-
     loop {
         match context.read_line("> ", &mut |_| {}) {
             Ok(line) => {
-                match &*line.trim() {
-                    "quit" => {
-                        break;
-                    },
-                    _ => {
-                        match single_line(&line) {
-                            Ok(parsed) => {
-                                match  parsed {
-                                    Line::Statement(s) => {
-                                        if let Err(e) = run_statement(&mut var_map, s) {
-                                            println!("{}", e);
-                                        }
+                match single_line(&line) {
+                    Ok(parsed) => {
+                        match  parsed {
+                            Line::Statement(s) => {
+                                if let Err(e) = run_statement(&mut var_map, s) {
+                                    println!("{}", e);
+                                }
+                            },
+                            Line::Expression(e) => {
+                                match eval_expr(&var_map, &e) {
+                                    Ok(expr) => {
+                                        println!("{}", expr);
                                     },
-                                    Line::Expression(e) => {
-                                        match eval_expr(&var_map, &e) {
-                                            Ok(expr) => {
-                                                println!("{}", expr);
-                                            },
-                                            Err(e) => {
-                                                println!("Error: {}", e);
-                                            },
-                                        }
+                                    Err(e) => {
+                                        println!("Error: {}", e);
                                     },
                                 }
                             },
-                            Err(e) => {
-                                println!("{}", e);
-                            },
                         }
-                    }
+                    },
+                    Err(e) => {
+                        println!("{}", e);
+                    },
                 }
 
                 let buffer = Buffer::from(line);
