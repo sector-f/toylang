@@ -117,9 +117,9 @@ negation -> Expr
 
 index -> Expr
     = var:atom b:brackets+ {
-        let first = b[0].clone();
-        b.into_iter()
-            .skip(1)
+        let mut iter = b.into_iter();
+        let first = iter.next().unwrap();
+        iter.into_iter()
             .fold(
                 Expr::Index(Box::new(var), Box::new(first)),
                 |prev, next| {
