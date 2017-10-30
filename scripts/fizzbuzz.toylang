@@ -1,17 +1,17 @@
-// Set variable
-let i = 1;
-
-// While loop
-while i <= 100 {
-	// Modulo operation
-	if i % 15 == 0 {
-		println "FizzBuzz"; // Print statement
-	} elif i % 3 == 0 {
+func print_fizzbuzz(n: num) {
+	if n % 15 == 0 {
+		println "FizzBuzz";
+	} elif n % 3 == 0 {
 		println "Fizz";
-	} elif i % 5 == 0 {
+	} elif n % 5 == 0 {
 		println "Buzz";
 	} else {
-		println i;
+		println n;
 	}
+}
+
+let i = 1;
+while i <= 100 {
+	print_fizzbuzz(i);
 	i += 1;
 }

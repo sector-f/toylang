@@ -67,4 +67,22 @@ mod tests {
         assert!(expression("ARGV[1] as num").is_ok());
         assert!(expression("![true][0] as string").is_ok());
     }
+
+    #[test]
+    fn declare_function() {
+        assert!(statement("func print_one() { println 1; }").is_ok());
+        assert!(statement("func print_num(n: num) { println n; }").is_ok());
+        assert!(statement(r#"func print_num_and_str(n: num, s: string) { println n, " ", s; }"#).is_ok());
+    }
+
+    #[test]
+    fn call_function() {
+        assert!(expression("some_func(1)").is_ok());
+        assert!(expression("3 + square(5) * 3").is_ok());
+    }
+
+    #[test]
+    fn print_func() {
+        assert!(ast("func foo() { }\nprintln foo();").is_ok());
+    }
 }

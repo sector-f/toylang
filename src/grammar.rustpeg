@@ -11,6 +11,9 @@ pub statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::DeclareVar(ident, e)
     }
+    / "func" whitespace+ ident:identifier "(" whitespace* args:arg_list whitespace* ")" whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
+        Statement::DeclareFunc(ident, args, s)
+    }
     / ident:identifier whitespace* op:assign_op whitespace* e:expression whitespace* ";" whitespace* {
         Statement::MutateVar(op, ident, e)
     }
@@ -49,6 +52,12 @@ pub statement -> Statement
     / e:expression whitespace* ";" whitespace* {
         Statement::Expression(e)
     }
+
+arg_list -> Vec<(String, Type)>
+    = arg:arg ** (whitespace* "," whitespace*) { arg }
+
+arg -> (String, Type)
+    = ident:identifier whitespace* ":" whitespace* t:type_ident { (ident, t) }
 
 expression_list -> Option<Vec<Expr>>
     = whitespace+ e:expression ** (whitespace* "," whitespace*) { Some(e) }
@@ -115,10 +124,14 @@ pub super_atom -> Expr
     = i:index { i }
     / n:negation { n }
     / t:type_ident { Expr::Literal(Value::Type(t)) }
+    / f:func_call { f }
     / a:atom { a }
 
 negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
+
+func_call -> Expr
+    = ident:identifier "(" whitespace* args:super_atom* whitespace* ")" { Expr::CallFunc(ident, args) }
 
 index -> Expr
     = var:atom b:brackets+ {

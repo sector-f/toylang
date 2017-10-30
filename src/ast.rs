@@ -10,6 +10,7 @@ pub enum Line {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     DeclareVar(String, Expr),
+    DeclareFunc(String, Vec<(String, Type)>, Vec<Statement>),
     MutateVar(AssignOp, String, Expr),
     Expression(Expr),
     If(IfStatement, Option<Vec<IfStatement>>, Option<Vec<Statement>>), // (If, Else If, Else)
@@ -31,6 +32,7 @@ pub enum Expr {
     Literal(Value),
     Reference(String),
     Typecast(Box<Expr>, Box<Expr>),
+    CallFunc(String, Vec<Expr>),
     Array(Vec<Expr>),
     Index(Box<Expr>, Box<Expr>),
     BinOp(Op, Box<Expr>, Box<Expr>),
@@ -87,16 +89,23 @@ pub enum Type {
     Boolean,
     Array,
     Type,
+    Void,
+    Func(Vec<Type>),
 }
 
 impl Display for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         let text = match *self {
-            Type::Num => "num",
-            Type::String => "string",
-            Type::Boolean => "bool",
-            Type::Array => "array",
-            Type::Type => "type",
+            Type::Num => "num".to_string(),
+            Type::String => "string".to_string(),
+            Type::Boolean => "bool".to_string(),
+            Type::Array => "array".to_string(),
+            Type::Type => "type".to_string(),
+            Type::Void => "void".to_string(),
+            Type::Func(ref args) => {
+                let list = args.iter().format_with(", ", |item, f| f(&format_args!("{}", item)));
+                format!("func({})", list)
+            },
         };
 
         write!(f, "{}", text)
@@ -109,6 +118,8 @@ pub enum Value {
     Boolean(bool),
     Array(Vec<Value>),
     Type(Type),
+    Void,
+    Func(Vec<(String, Type)>, Vec<Statement>), // (args, body)
 }
 
 impl Value {
@@ -119,6 +130,8 @@ impl Value {
             Value::Boolean(_) => Type::Boolean,
             Value::Array(_) => Type::Array,
             Value::Type(_) => Type::Type,
+            Value::Void => Type::Void,
+            Value::Func(ref args, ref _body) => Type::Func(args.iter().map(|a| a.1.clone()).collect()),
         }
     }
 }
@@ -134,6 +147,11 @@ impl Display for Value {
                 format!("[{}]", list)
             },
             Value::Type(ref t) => t.to_string(),
+            Value::Void => "void".to_string(),
+            Value::Func(ref args, ref _body) => {
+                let list = args.iter().format_with(", ", |item, f| f(&format_args!("{}", item.1)));
+                format!("func({})", list)
+            },
         };
 
         write!(f, "{}", text)

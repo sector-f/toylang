@@ -80,6 +80,10 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
             let value = eval_expr(&global_vars, &expr)?;
             global_vars.insert(name, value);
         },
+        Statement::DeclareFunc(name, args, body) => {
+            let func = Value::Func(args, body);
+            global_vars.insert(name, func);
+        },
         Statement::MutateVar(op, name, expr) => {
             if let None = global_vars.get(&name) {
                 return Err(format!("undeclared variable: {}", name));
@@ -269,6 +273,8 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                         }
                     },
                     Value::Array(ref _a) => {},
+                    Value::Func(_, _) => {},
+                    Value::Void => {},
                 }
 
                 return Err(format!("invalid typecast: {} to {}", var.get_type(), new_type));
@@ -276,6 +282,41 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                 return Err(format!("expected type, found {}", new_type.get_type()))
             }
         },
+        Expr::CallFunc(ref name, ref args) => {
+            let variable = global_vars.get(name).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", name))?;
+            let passed_args = args.into_iter().map(|expr| eval_expr(&global_vars, &expr)).collect::<Result<Vec<Value>, _>>()?;
+
+            if let Value::Func(required_args, statements) = variable {
+                let passed_len = passed_args.len();
+                let required_len = required_args.len();
+
+                if passed_len == required_len {
+                    for (passed, declared) in passed_args.iter().zip(required_args.iter()) {
+                        let passed_type = &passed.get_type();
+                        let required_type = &declared.1;
+
+                        if passed_type != required_type {
+                            return Err(format!("wrong type of argument passed to {} (expected {}, found {})", name, required_type, passed_type));
+                        }
+                    }
+
+                    let mut variables = HashMap::new();
+                    for (i, var) in required_args.into_iter().enumerate() {
+                        variables.insert(var.0, passed_args[i].clone());
+                    }
+
+                    for s in statements {
+                        run_statement(&mut variables, s)?;
+                    }
+
+                    Ok(Value::Void)
+                } else {
+                    Err(format!("wrong number of arguments passed to {} (expected {}, found {})", name, required_len, passed_len))
+                }
+            } else {
+                Err(format!("cannot call {} as func", variable.get_type()))
+            }
+        }
         Expr::Array(ref exprs) => {
             let mut array = Vec::new();
             for e in exprs {
