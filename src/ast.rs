@@ -1,13 +1,13 @@
 use itertools::Itertools;
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Line {
     Statement(Statement),
     Expression(Expr),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     DeclareVar(String, Expr),
     MutateVar(AssignOp, String, Expr),
@@ -19,13 +19,13 @@ pub enum Statement {
     Exit(Expr),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct IfStatement {
     pub e: Expr,
     pub s: Vec<Statement>
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Literal(Value),
     Reference(String),
@@ -37,7 +37,7 @@ pub enum Expr {
     UnOp(UnaryOp, Box<Expr>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Op {
     Add,
     Sub,
@@ -47,7 +47,7 @@ pub enum Op {
     Exp,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum AssignOp {
     Equals,
     AddEq,
@@ -57,7 +57,7 @@ pub enum AssignOp {
     ModEq,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CompOp {
     Equal,
     NotEq,
@@ -67,18 +67,18 @@ pub enum CompOp {
     Le,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BoolLogic {
     And,
     Or,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum UnaryOp {
     Not,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Num(f64),
     String(String),

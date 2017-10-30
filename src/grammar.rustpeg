@@ -7,7 +7,7 @@ pub single_line -> Line
     = whitespace* s:statement whitespace* comment? { Line::Statement(s) }
     / whitespace* e:expression whitespace* comment? { Line::Expression(e) }
 
-statement -> Statement
+pub statement -> Statement
     = "let" whitespace+ ident:identifier whitespace* "=" whitespace* e:expression whitespace* ";" whitespace* {
         Statement::DeclareVar(ident, e)
     }
@@ -76,7 +76,7 @@ else_statement -> Vec<Statement>
         s
     }
 
-expression -> Expr
+pub expression -> Expr
 = #infix<super_atom> {
     #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
     #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
@@ -98,8 +98,6 @@ expression -> Expr
 
     #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
 }
-// / a:array { a }
-// / sa:super_atom { sa }
 
 assign_op -> AssignOp
     = "="  { AssignOp::Equals }
@@ -109,7 +107,7 @@ assign_op -> AssignOp
     / "/=" { AssignOp::DivEq }
     / "%=" { AssignOp::ModEq }
 
-super_atom -> Expr
+pub super_atom -> Expr
     = i:index { i }
     / n:negation { n }
     / a:atom { a }
@@ -122,7 +120,7 @@ index -> Expr
         Expr::Index(Box::new(var), Box::new(index))
     }
 
-atom -> Expr
+pub atom -> Expr
     = "(" e:expression ")" { e }
     / v:value { v }
     / r:reference { Expr::Reference(r) }
