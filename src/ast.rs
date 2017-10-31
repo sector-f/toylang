@@ -40,6 +40,7 @@ pub enum Expr {
     Comparison(CompOp, Box<Expr>, Box<Expr>),
     BoolChain(BoolLogic, Box<Expr>, Box<Expr>),
     UnOp(UnaryOp, Box<Expr>),
+    Length(Box<Expr>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

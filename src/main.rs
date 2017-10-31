@@ -439,6 +439,15 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                 },
             }
         }
+        Expr::Length(ref expr) => {
+            let expr = eval_expr(global_vars, expr)?;
+            if let Value::Array(ref vec) = expr {
+                let len = vec.len();
+                Ok(Value::Num(len as f64))
+            } else {
+                Err(format!("cannot get length of {}", expr.get_type()))
+            }
+        }
     }
 }
 

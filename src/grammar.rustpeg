@@ -126,6 +126,7 @@ assign_op -> AssignOp
 pub super_atom -> Expr
     = i:index { i }
     / n:negation { n }
+    / l:length { l }
     / t:type_ident { Expr::Literal(Value::Type(t)) }
     / f:func_call { f }
     / a:atom { a }
@@ -135,6 +136,9 @@ negation -> Expr
 
 func_call -> Expr
     = ident:identifier "(" whitespace* args:(super_atom ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(ident, args) }
+
+length -> Expr
+    = "length(" whitespace* sa:super_atom whitespace* ")" { Expr::Length(Box::new(sa)) }
 
 index -> Expr
     = var:atom b:brackets+ {
