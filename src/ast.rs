@@ -13,11 +13,12 @@ pub enum Statement {
     DeclareFunc(String, Vec<(String, Type)>, Vec<Statement>),
     MutateVar(AssignOp, String, Expr),
     Expression(Expr),
+    Return(Expr),
     If(IfStatement, Option<Vec<IfStatement>>, Option<Vec<Statement>>), // (If, Else If, Else)
     While(Expr, Vec<Statement>),
     Print(Vec<Expr>),
     Println(Vec<Expr>),
-    Typeof(Box<Expr>),
+    Typeof(Expr),
     Exit(Expr),
 }
 

@@ -25,6 +25,9 @@ pub statement -> Statement
         };
         Statement::If(if_s, else_if, else_s)
     }
+    / "return" whitespace+ e:expression ";" whitespace* {
+        Statement::Return(e)
+    }
     / "while" whitespace+ cond:expression whitespace* "{" whitespace* s:statement* whitespace* "}" whitespace* {
         Statement::While(cond, s)
     }
@@ -41,7 +44,7 @@ pub statement -> Statement
         }
     }
     / "typeof" whitespace+ e:expression ";" whitespace* {
-        Statement::Typeof(Box::new(e))
+        Statement::Typeof(e)
     }
     / "exit" e:maybe_expression whitespace* ";" whitespace* {
         match e {
@@ -131,7 +134,7 @@ negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 
 func_call -> Expr
-    = ident:identifier "(" whitespace* args:super_atom* whitespace* ")" { Expr::CallFunc(ident, args) }
+    = ident:identifier "(" whitespace* args:(super_atom ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(ident, args) }
 
 index -> Expr
     = var:atom b:brackets+ {
@@ -164,7 +167,7 @@ pub type_ident -> Type
     / "bool" { Type::Boolean }
     / "array" { Type::Array }
     / "type" { Type::Type }
-
+    / "func(" whitespace* t:type_ident* whitespace* ")" { Type::Func(t) }
 
 reference -> String // Variable lookup
     = ident:identifier { ident }

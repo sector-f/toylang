@@ -74,7 +74,7 @@ fn run_script<P: AsRef<Path>>(path: P, arguments: Vec<String>) -> i32 {
     }
 }
 
-fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(), String> {
+fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<Option<Value>, String> {
     match statement {
         Statement::DeclareVar(name, expr) => {
             let value = eval_expr(&global_vars, &expr)?;
@@ -127,6 +127,10 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
         Statement::Expression(expression) => {
             eval_expr(&global_vars, &expression)?;
         }
+        Statement::Return(expression) => {
+            let return_val = eval_expr(&global_vars, &expression)?;
+            return Ok(Some(return_val));
+        }
         Statement::If(if_s, elif_s, else_s) => {
             let if_cond = eval_expr(&global_vars, &if_s.e)?;
             if let Value::Boolean(b) = if_cond {
@@ -134,7 +138,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                     for s in if_s.s {
                         run_statement(&mut global_vars, s)?;
                     }
-                    return Ok(());
+                    return Ok(None);
                 } else if let Some(statements) = elif_s {
                     'else_if: for statement in statements {
                         if let Value::Boolean(b) = eval_expr(&global_vars, &statement.e)? {
@@ -142,7 +146,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                                 for s in statement.s {
                                     run_statement(&mut global_vars, s)?;
                                 }
-                                return Ok(());
+                                return Ok(None);
                             }
                         } else {
                             return Err(format!("expected boolean, found {}", if_cond.get_type()));
@@ -153,7 +157,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
                     for s in statements {
                         run_statement(&mut global_vars, s)?;
                     }
-                    return Ok(());
+                    return Ok(None);
                 }
             } else {
                 return Err(format!("expected boolean, found {}", if_cond.get_type()));
@@ -205,7 +209,7 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<(
         },
     }
 
-    Ok(())
+    Ok(None)
 }
 
 fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
@@ -306,7 +310,9 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                     }
 
                     for s in statements {
-                        run_statement(&mut variables, s)?;
+                        if let Some(return_val) = run_statement(&mut variables, s)? {
+                            return Ok(return_val);
+                        }
                     }
 
                     Ok(Value::Void)

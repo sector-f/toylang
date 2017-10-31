@@ -18,7 +18,6 @@ aim to be actually useful.
 * Interactive REPL
 
 ## To-Do
-* Return values from functions
 * Read line of input (e.g. Bash's `read` builtin)
 * `for` loops
 * Pick a better name

@@ -78,11 +78,13 @@ mod tests {
     #[test]
     fn call_function() {
         assert!(expression("some_func(1)").is_ok());
+        assert!(expression("some_func(1, 2)").is_ok());
         assert!(expression("3 + square(5) * 3").is_ok());
+        assert!(ast("func foo() { }\nprintln foo();").is_ok());
     }
 
     #[test]
-    fn print_func() {
-        assert!(ast("func foo() { }\nprintln foo();").is_ok());
+    fn return_statement() {
+        assert!(statement("return 1;").is_ok());
     }
 }
