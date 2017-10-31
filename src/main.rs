@@ -224,15 +224,15 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             let var = eval_expr(global_vars, expression)?;
             let new_type = eval_expr(global_vars, new_type)?;
 
-            if let &Value::Type(ref t) = &new_type {
+            if let &Value::Type(ref new_t) = &new_type {
                 match var {
                     Value::Num(n) => {
-                        if let &Type::String = t {
+                        if let &Type::String = new_t {
                             return Ok(Value::String(n.to_string()));
                         }
                     },
                     Value::Boolean(b) => {
-                        if let &Type::String = t {
+                        if let &Type::String = new_t {
                             return Ok(Value::String(b.to_string()));
                         }
                     },
@@ -242,7 +242,7 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                         }
                     },
                     Value::String(ref s) => {
-                        match t {
+                        match new_t {
                             &Type::Boolean => {
                                 match s.parse::<bool>() {
                                     Ok(b) => {
@@ -255,8 +255,8 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                             },
                             &Type::Type => {
                                 match type_ident(&s) {
-                                    Ok(t) => {
-                                        return Ok(Value::Type(t));
+                                    Ok(new_t) => {
+                                        return Ok(Value::Type(new_t));
                                     },
                                     Err(e) => {
                                         return Err(e.to_string());
@@ -272,6 +272,9 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                                         return Err(e.to_string());
                                     },
                                 }
+                            },
+                            &Type::Array => {
+                                return Ok(Value::Array(s.chars().map(|c| Value::String(c.to_string())).collect::<Vec<_>>()));
                             },
                             _ => {},
                         }

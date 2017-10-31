@@ -87,4 +87,9 @@ mod tests {
     fn return_statement() {
         assert!(statement("return 1;").is_ok());
     }
+
+    #[test]
+    fn get_length() {
+        assert!(expression(r#"length("test" as array)"#).is_ok());
+    }
 }

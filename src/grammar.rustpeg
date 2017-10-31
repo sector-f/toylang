@@ -138,7 +138,7 @@ func_call -> Expr
     = ident:identifier "(" whitespace* args:(super_atom ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(ident, args) }
 
 length -> Expr
-    = "length(" whitespace* sa:super_atom whitespace* ")" { Expr::Length(Box::new(sa)) }
+    = "length(" whitespace* sa:expression whitespace* ")" { Expr::Length(Box::new(sa)) }
 
 index -> Expr
     = var:atom b:brackets+ {
