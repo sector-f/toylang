@@ -160,7 +160,7 @@ brackets -> Expr
 pub atom -> Expr
     = "(" e:expression ")" { e }
     / v:value { v }
-    / r:reference { Expr::Reference(r) }
+    / r:reference { r }
 
 pub value -> Expr
     = a:array { a }
@@ -174,8 +174,8 @@ pub type_ident -> Type
     / "type" { Type::Type }
     / "func(" whitespace* t:type_ident* whitespace* ")" { Type::Func(t) }
 
-reference -> String // Variable lookup
-    = ident:identifier { ident }
+reference -> Expr // Variable lookup
+    = ident:identifier { Expr::Reference(ident) }
 
 array -> Expr
     = "[" whitespace* e:(expression ** (whitespace* "," whitespace*)) whitespace* "]" { Expr::Array(e) }
