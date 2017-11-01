@@ -92,4 +92,15 @@ mod tests {
     fn get_length() {
         assert!(expression(r#"length("test" as array)"#).is_ok());
     }
+
+    #[test]
+    fn mutate_var() {
+        assert!(statement("foo = 1;").is_ok());
+        assert!(statement("foo *= 2;").is_ok());
+        assert!(statement("foo /= 3;").is_ok());
+        assert!(statement("foo += 4;").is_ok());
+        assert!(statement("foo -= 5;").is_ok());
+        assert!(statement("foo %= 6;").is_ok());
+        assert!(statement("foo **= 7;").is_ok());
+    }
 }

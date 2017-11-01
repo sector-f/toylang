@@ -92,28 +92,28 @@ else_statement -> Vec<Statement>
     }
 
 pub expression -> Expr
-= #infix<super_atom> {
-    #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
-    #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
+    = #infix<super_atom> {
+        #L x (whitespace* "||" whitespace*) y { Expr::BoolChain(BoolLogic::Or, Box::new(x), Box::new(y)) }
+        #L x (whitespace* "&&" whitespace*) y { Expr::BoolChain(BoolLogic::And, Box::new(x), Box::new(y)) }
 
-    #L x (whitespace* "==" whitespace*) y { Expr::Comparison(CompOp::Equal, Box::new(x), Box::new(y)) }
-       x (whitespace* "!=" whitespace*) y { Expr::Comparison(CompOp::NotEq, Box::new(x), Box::new(y)) }
+        #L x (whitespace* "==" whitespace*) y { Expr::Comparison(CompOp::Equal, Box::new(x), Box::new(y)) }
+           x (whitespace* "!=" whitespace*) y { Expr::Comparison(CompOp::NotEq, Box::new(x), Box::new(y)) }
 
-    #L x (whitespace* "<" whitespace*) y { Expr::Comparison(CompOp::Lt, Box::new(x), Box::new(y)) }
-       x (whitespace* "<=" whitespace*) y { Expr::Comparison(CompOp::Le, Box::new(x), Box::new(y)) }
-       x (whitespace* ">" whitespace*) y { Expr::Comparison(CompOp::Gt, Box::new(x), Box::new(y)) }
-       x (whitespace* ">=" whitespace*) y { Expr::Comparison(CompOp::Ge, Box::new(x), Box::new(y)) }
+        #L x (whitespace* "<" whitespace*) y { Expr::Comparison(CompOp::Lt, Box::new(x), Box::new(y)) }
+           x (whitespace* "<=" whitespace*) y { Expr::Comparison(CompOp::Le, Box::new(x), Box::new(y)) }
+           x (whitespace* ">" whitespace*) y { Expr::Comparison(CompOp::Gt, Box::new(x), Box::new(y)) }
+           x (whitespace* ">=" whitespace*) y { Expr::Comparison(CompOp::Ge, Box::new(x), Box::new(y)) }
 
-    #L x (whitespace* "+"  whitespace*) y { Expr::BinOp(Op::Add, Box::new(x), Box::new(y)) }
-       x (whitespace* "-"  whitespace*) y { Expr::BinOp(Op::Sub, Box::new(x), Box::new(y)) }
+        #L x (whitespace* "+"  whitespace*) y { Expr::BinOp(Op::Add, Box::new(x), Box::new(y)) }
+           x (whitespace* "-"  whitespace*) y { Expr::BinOp(Op::Sub, Box::new(x), Box::new(y)) }
 
-    #L x (whitespace* "*"  whitespace*) y { Expr::BinOp(Op::Mul, Box::new(x), Box::new(y)) }
-       x (whitespace* "/"  whitespace*) y { Expr::BinOp(Op::Div, Box::new(x), Box::new(y)) }
-       x (whitespace* "%"  whitespace*) y { Expr::BinOp(Op::Mod, Box::new(x), Box::new(y)) }
+        #L x (whitespace* "*"  whitespace*) y { Expr::BinOp(Op::Mul, Box::new(x), Box::new(y)) }
+           x (whitespace* "/"  whitespace*) y { Expr::BinOp(Op::Div, Box::new(x), Box::new(y)) }
+           x (whitespace* "%"  whitespace*) y { Expr::BinOp(Op::Mod, Box::new(x), Box::new(y)) }
 
-    #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
-    #R x (whitespace+ "as" whitespace+) y { Expr::Typecast(Box::new(x), Box::new(y)) }
-}
+        #R x (whitespace* "**" whitespace*) y { Expr::BinOp(Op::Exp, Box::new(x), Box::new(y)) }
+        #R x (whitespace+ "as" whitespace+) y { Expr::Typecast(Box::new(x), Box::new(y)) }
+    }
 
 assign_op -> AssignOp
     = "="  { AssignOp::Equals }
@@ -122,6 +122,7 @@ assign_op -> AssignOp
     / "*=" { AssignOp::MulEq }
     / "/=" { AssignOp::DivEq }
     / "%=" { AssignOp::ModEq }
+    / "**=" { AssignOp::ExpEq }
 
 pub super_atom -> Expr
     = i:index { i }

@@ -115,6 +115,9 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
                             AssignOp::ModEq => {
                                 new_value = old % new;
                             },
+                            AssignOp::ExpEq => {
+                                new_value = old.powf(new);
+                            },
                             _ => unreachable!(),
                         }
                         global_vars.insert(name, Value::Num(new_value));

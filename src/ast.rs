@@ -61,6 +61,7 @@ pub enum AssignOp {
     MulEq,
     DivEq,
     ModEq,
+    ExpEq,
 }
 
 #[derive(Debug, Clone, PartialEq)]
