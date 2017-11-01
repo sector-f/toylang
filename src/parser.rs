@@ -79,6 +79,7 @@ mod tests {
     fn call_function() {
         assert!(expression("some_func(1)").is_ok());
         assert!(expression("some_func(1, 2)").is_ok());
+        assert!(expression("some_func(1 + 2, 2)").is_ok());
         assert!(expression("3 + square(5) * 3").is_ok());
         assert!(ast("func foo() { }\nprintln foo();").is_ok());
     }
@@ -86,6 +87,12 @@ mod tests {
     #[test]
     fn call_func_in_array() {
         assert!(expression("some_array[1](3)").is_ok());
+    }
+
+    #[test]
+    fn call_func_from_func() {
+        assert!(expression("returns_func()(3)").is_ok());
+        assert!(expression("returns_func(5)()").is_ok());
     }
 
     #[test]
