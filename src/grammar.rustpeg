@@ -125,18 +125,18 @@ assign_op -> AssignOp
     / "**=" { AssignOp::ExpEq }
 
 pub super_atom -> Expr
-    = i:index { i }
+    = f:func_call { f }
+    / i:index { i }
     / n:negation { n }
     / l:length { l }
     / t:type_ident { Expr::Literal(Value::Type(t)) }
-    / f:func_call { f }
     / a:atom { a }
 
 negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 
 func_call -> Expr
-    = ident:identifier "(" whitespace* args:(super_atom ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(ident, args) }
+    = func:(index / reference) "(" whitespace* args:(super_atom ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(Box::new(func), args) }
 
 length -> Expr
     = "length(" whitespace* sa:expression whitespace* ")" { Expr::Length(Box::new(sa)) }

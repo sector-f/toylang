@@ -292,11 +292,11 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                 return Err(format!("expected type, found {}", new_type.get_type()))
             }
         },
-        Expr::CallFunc(ref name, ref args) => {
-            let variable = global_vars.get(name).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", name))?;
+        Expr::CallFunc(ref f_ident, ref args) => {
+            let func = eval_expr(global_vars, f_ident)?;
             let passed_args = args.into_iter().map(|expr| eval_expr(&global_vars, &expr)).collect::<Result<Vec<Value>, _>>()?;
 
-            if let Value::Func(required_args, statements) = variable {
+            if let Value::Func(required_args, statements) = func {
                 let passed_len = passed_args.len();
                 let required_len = required_args.len();
 
@@ -306,7 +306,7 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                         let required_type = &declared.1;
 
                         if passed_type != required_type {
-                            return Err(format!("wrong type of argument passed to {} (expected {}, found {})", name, required_type, passed_type));
+                            return Err(format!("wrong type of argument passed to function (expected {}, found {})", required_type, passed_type));
                         }
                     }
 
@@ -323,10 +323,10 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
 
                     Ok(Value::Void)
                 } else {
-                    Err(format!("wrong number of arguments passed to {} (expected {}, found {})", name, required_len, passed_len))
+                    Err(format!("wrong number of arguments passed to function (expected {}, found {})", required_len, passed_len))
                 }
             } else {
-                Err(format!("cannot call {} as func", variable.get_type()))
+                Err(format!("cannot call {} as function", func.get_type()))
             }
         }
         Expr::Array(ref exprs) => {

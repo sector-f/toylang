@@ -84,6 +84,11 @@ mod tests {
     }
 
     #[test]
+    fn call_func_in_array() {
+        assert!(expression("some_array[1](3)").is_ok());
+    }
+
+    #[test]
     fn return_statement() {
         assert!(statement("return 1;").is_ok());
     }

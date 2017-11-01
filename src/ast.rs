@@ -33,7 +33,7 @@ pub enum Expr {
     Literal(Value),
     Reference(String),
     Typecast(Box<Expr>, Box<Expr>),
-    CallFunc(String, Vec<Expr>),
+    CallFunc(Box<Expr>, Vec<Expr>),
     Array(Vec<Expr>),
     Index(Box<Expr>, Box<Expr>),
     BinOp(Op, Box<Expr>, Box<Expr>),
