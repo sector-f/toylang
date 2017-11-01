@@ -10,7 +10,6 @@ pub enum Line {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     DeclareVar(String, Expr),
-    DeclareFunc(String, Vec<(String, Type)>, Vec<Statement>),
     MutateVar(AssignOp, String, Expr),
     Expression(Expr),
     Return(Expr),

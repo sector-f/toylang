@@ -70,9 +70,14 @@ mod tests {
 
     #[test]
     fn declare_function() {
-        assert!(statement("func print_one() { println 1; }").is_ok());
-        assert!(statement("func print_num(n: num) { println n; }").is_ok());
-        assert!(statement(r#"func print_num_and_str(n: num, s: string) { println n, " ", s; }"#).is_ok());
+        assert!(statement("let print_one = func() { println 1; };").is_ok());
+        assert!(statement("let print_num = func(n: num) { println n; };").is_ok());
+        assert!(statement(r#"let print_num_and_str = func(n: num, s: string) { println n, " ", s; };"#).is_ok());
+    }
+
+    #[test]
+    fn func_as_expr() {
+        assert!(expression("func() { println 1; }").is_ok());
     }
 
     #[test]
@@ -81,7 +86,7 @@ mod tests {
         assert!(expression("some_func(1, 2)").is_ok());
         assert!(expression("some_func(1 + 2, 2)").is_ok());
         assert!(expression("3 + square(5) * 3").is_ok());
-        assert!(ast("func foo() { }\nprintln foo();").is_ok());
+        assert!(ast("let foo = func() { };\nprintln foo();").is_ok());
     }
 
     #[test]

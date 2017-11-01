@@ -1,4 +1,4 @@
-func print_fizzbuzz(n: num) {
+let print_fizzbuzz = func(n: num) {
 	if n % 15 == 0 {
 		println "FizzBuzz";
 	} elif n % 3 == 0 {
@@ -8,7 +8,7 @@ func print_fizzbuzz(n: num) {
 	} else {
 		println n;
 	}
-}
+};
 
 let i = 1;
 while i <= 100 {

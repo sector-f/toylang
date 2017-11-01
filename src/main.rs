@@ -80,10 +80,6 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
             let value = eval_expr(&global_vars, &expr)?;
             global_vars.insert(name, value);
         },
-        Statement::DeclareFunc(name, args, body) => {
-            let func = Value::Func(args, body);
-            global_vars.insert(name, func);
-        },
         Statement::MutateVar(op, name, expr) => {
             if let None = global_vars.get(&name) {
                 return Err(format!("undeclared variable: {}", name));
