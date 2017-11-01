@@ -135,9 +135,6 @@ pub super_atom -> Expr
 negation -> Expr
     = "!" whitespace* e:(super_atom) { Expr::UnOp(UnaryOp::Not, Box::new(e)) }
 
-// func_call -> Expr
-//     = func:(index / reference) "(" whitespace* args:(expression ** (whitespace* "," whitespace*)) whitespace* ")" { Expr::CallFunc(Box::new(func), args) }
-
 func_call -> Expr
     = func:(index / reference) args:paren_arg+ {
         let mut iter = args.into_iter();
