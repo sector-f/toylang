@@ -206,8 +206,6 @@ boolean -> Value
 
 identifier -> String = text:$(character+ (character/digit/"_")*) { text.to_string() }
 
-// keyword = "true" / "false" / "let" / "print" / "println" / "while" / "if" / "elif" / "else" / "exit"
-
 comment = #quiet<"//" [^\n\r]*>
 
 number -> Value

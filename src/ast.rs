@@ -159,3 +159,27 @@ impl Display for Value {
         write!(f, "{}", text)
     }
 }
+
+pub struct Ident(pub String);
+
+impl Ident {
+    pub fn new(s: String) -> Result<Self, String> {
+        match &*s {
+              "true"
+            | "false"
+            | "let"
+            | "print"
+            | "println"
+            | "while"
+            | "if"
+            | "elif"
+            | "else"
+            | "length"
+            | "return"
+            | "typeof"
+            | "exit"
+              => { Err("expected identifier, found keyword".to_string()) }
+            _ => { Ok(Ident(s)) }
+        }
+    }
+}

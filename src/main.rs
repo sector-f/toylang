@@ -77,10 +77,13 @@ fn run_script<P: AsRef<Path>>(path: P, arguments: Vec<String>) -> i32 {
 fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<Option<Value>, String> {
     match statement {
         Statement::DeclareVar(name, expr) => {
+            let name = Ident::new(name)?.0;
             let value = eval_expr(&global_vars, &expr)?;
             global_vars.insert(name, value);
         },
         Statement::MutateVar(op, name, expr) => {
+            let name = Ident::new(name)?.0;
+
             if let None = global_vars.get(&name) {
                 return Err(format!("undeclared variable: {}", name));
             }
@@ -217,7 +220,8 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             Ok(v.to_owned())
         },
         Expr::Reference(ref r) => {
-            global_vars.get(r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
+            let r = Ident::new(r.to_owned())?.0;
+            global_vars.get(&r).map(|item| item.clone()).ok_or(format!("Undefined variable: {}", r))
         },
         Expr::Typecast(ref expression, ref new_type) => {
             let var = eval_expr(global_vars, expression)?;
@@ -468,7 +472,7 @@ fn repl() -> i32 {
                         match  parsed {
                             Line::Statement(s) => {
                                 if let Err(e) = run_statement(&mut var_map, s) {
-                                    println!("{}", e);
+                                    println!("Error: {}", e);
                                 }
                             },
                             Line::Expression(e) => {
