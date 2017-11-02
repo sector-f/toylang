@@ -116,11 +116,13 @@ assign_op -> AssignOp
     / "**=" { AssignOp::ExpEq }
 
 pub super_atom -> Expr
-    = f:func_def { f }
+    = l:length { l }
+    / u:to_upper { u }
+    / l:to_lower { l }
+    / f:func_def { f }
     / f:func_call { f }
     / i:index { i }
     / n:negation { n }
-    / l:length { l }
     / t:type_ident { Expr::Literal(Value::Type(t)) }
     / a:atom { a }
 
@@ -143,8 +145,14 @@ func_call -> Expr
 paren_arg -> Vec<Expr>
     = "(" whitespace* args:(expression ** (whitespace* "," whitespace*)) whitespace* ")" { args }
 
-length -> Expr
+pub length -> Expr
     = "length(" whitespace* sa:expression whitespace* ")" { Expr::Length(Box::new(sa)) }
+
+pub to_upper -> Expr
+    = "to_upper(" whitespace* sa:expression whitespace* ")" { Expr::ToUpper(Box::new(sa)) }
+
+pub to_lower -> Expr
+    = "to_lower(" whitespace* sa:expression whitespace* ")" { Expr::ToLower(Box::new(sa)) }
 
 index -> Expr
     = var:atom b:brackets+ {

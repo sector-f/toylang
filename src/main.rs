@@ -454,6 +454,22 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                 Err(format!("cannot get length of {}", expr.get_type()))
             }
         }
+        Expr::ToUpper(ref expr) => {
+            let expr = eval_expr(global_vars, expr)?;
+            if let Value::String(ref s) = expr {
+                Ok(Value::String(s.to_uppercase()))
+            } else {
+                Err(format!("cannot make {} uppercase", expr.get_type()))
+            }
+        }
+        Expr::ToLower(ref expr) => {
+            let expr = eval_expr(global_vars, expr)?;
+            if let Value::String(ref s) = expr {
+                Ok(Value::String(s.to_lowercase()))
+            } else {
+                Err(format!("cannot make {} lowercase", expr.get_type()))
+            }
+        }
     }
 }
 

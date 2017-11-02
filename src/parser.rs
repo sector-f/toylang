@@ -107,7 +107,13 @@ mod tests {
 
     #[test]
     fn get_length() {
-        assert!(expression(r#"length("test" as array)"#).is_ok());
+        assert!(length(r#"length("test" as array)"#).is_ok());
+    }
+
+    #[test]
+    fn string_builtins() {
+        assert!(to_upper(r#"to_upper("foo")"#).is_ok());
+        assert!(to_lower(r#"to_lower("bar")"#).is_ok());
     }
 
     #[test]

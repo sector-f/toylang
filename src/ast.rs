@@ -40,6 +40,8 @@ pub enum Expr {
     BoolChain(BoolLogic, Box<Expr>, Box<Expr>),
     UnOp(UnaryOp, Box<Expr>),
     Length(Box<Expr>),
+    ToUpper(Box<Expr>),
+    ToLower(Box<Expr>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -177,6 +179,8 @@ impl Ident {
             | "length"
             | "return"
             | "typeof"
+            | "to_upper"
+            | "to_lower"
             | "exit"
               => { Err("expected identifier, found keyword".to_string()) }
             _ => { Ok(Ident(s)) }
