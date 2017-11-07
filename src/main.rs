@@ -217,13 +217,12 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
 fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
     match *expr {
         Expr::FuncDef(ref v) => {
-            // I'm sad this doesn't work because you can't cloned() an iter of (&this, &that)
-            //let env: Vec<(String, Value)> = global_vars.iter().cloned().collect();
-            let mut env: Vec<(String, Value)> = vec![];
-            for (name, value) in global_vars.iter() {
-                env.push((name.clone(), value.clone()));
+            if let &Value::Func(ref _environment, ref args, ref body) = v {
+                let env = global_vars.clone();
+                Ok(Value::Func(Some(env), args.clone(), body.clone()))
+            } else {
+                unreachable!()
             }
-            Ok(Value::Closure(Box::new(v.to_owned()), env))
         },
         Expr::Literal(ref v) => {
             Ok(v.to_owned())
@@ -292,8 +291,7 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                         }
                     },
                     Value::Array(ref _a) => {},
-                    Value::Func(_, _) => {},
-                    Value::Closure(_, _) => {},
+                    Value::Func(_, _, _) => {},
                     Value::Void => {},
                 }
 
@@ -305,19 +303,14 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
         Expr::CallFunc(ref f_ident, ref args) => {
             let func = eval_expr(global_vars, f_ident)?;
             let passed_args = args.into_iter().map(|expr| eval_expr(&global_vars, &expr)).collect::<Result<Vec<Value>, _>>()?;
-            // we do want variables from the outer scope, don't we?
             let mut new_env = global_vars.clone();
 
-            let func = if let Value::Closure(function, environment) = func {
+            if let Value::Func(env, required_args, statements) = func {
+                let environment = env.unwrap();
                 for (name, value) in environment {
                     new_env.insert(name, value);
                 }
-                *function
-            } else {
-                func
-            };
 
-            if let Value::Func(required_args, statements) = func {
                 let passed_len = passed_args.len();
                 let required_len = required_args.len();
 
@@ -331,7 +324,6 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
                         }
                     }
 
-                    //let mut variables = HashMap::new();
                     for (i, var) in required_args.into_iter().enumerate() {
                         new_env.insert(var.0, passed_args[i].clone());
                     }

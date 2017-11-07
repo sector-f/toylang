@@ -181,7 +181,7 @@ pub value -> Expr
 
 pub func_def -> Expr
     = "func(" whitespace* args:arg_list whitespace* ")" whitespace* "{" whitespace* s:statement* whitespace* "}" {
-        Expr::FuncDef(Value::Func(args, s))
+        Expr::FuncDef(Value::Func(None, args, s))
     }
 
 arg_list -> Vec<(String, Type)>

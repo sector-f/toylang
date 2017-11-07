@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use std::fmt::{Display, Error, Formatter};
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub enum Line {
@@ -124,8 +125,7 @@ pub enum Value {
     Array(Vec<Value>),
     Type(Type),
     Void,
-    Func(Vec<(String, Type)>, Vec<Statement>), // (args, body)
-    Closure(Box<Value>, Vec<(String, Value)>)
+    Func(Option<HashMap<String, Value>>, Vec<(String, Type)>, Vec<Statement>), // (env, args, body)
 }
 
 impl Value {
@@ -137,8 +137,7 @@ impl Value {
             Value::Array(_) => Type::Array,
             Value::Type(_) => Type::Type,
             Value::Void => Type::Void,
-            Value::Func(ref args, ref _body) => Type::Func(args.iter().map(|a| a.1.clone()).collect()),
-            Value::Closure(ref function, ref _env) => function.get_type(),
+            Value::Func(ref _env, ref args, ref _body) => Type::Func(args.iter().map(|a| a.1.clone()).collect()),
         }
     }
 }
@@ -155,11 +154,10 @@ impl Display for Value {
             },
             Value::Type(ref t) => t.to_string(),
             Value::Void => "void".to_string(),
-            Value::Func(ref args, ref _body) => {
+            Value::Func(ref _env, ref args, ref _body) => {
                 let list = args.iter().format_with(", ", |item, f| f(&format_args!("{}", item.1)));
                 format!("func({})", list)
             },
-            Value::Closure(ref function, ref _env) => format!("{}", function)
         };
 
         write!(f, "{}", text)
