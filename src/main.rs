@@ -138,7 +138,9 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
             if let Value::Boolean(b) = if_cond {
                 if b {
                     for s in if_s.s {
-                        run_statement(&mut global_vars, s)?;
+                        if let Some(return_val) = run_statement(&mut global_vars, s)? {
+                            return Ok(Some(return_val));
+                        }
                     }
                     return Ok(None);
                 } else if let Some(statements) = elif_s {
@@ -146,7 +148,9 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
                         if let Value::Boolean(b) = eval_expr(&global_vars, &statement.e)? {
                             if b {
                                 for s in statement.s {
-                                    run_statement(&mut global_vars, s)?;
+                                    if let Some(return_val) = run_statement(&mut global_vars, s)? {
+                                        return Ok(Some(return_val));
+                                    }
                                 }
                                 return Ok(None);
                             }
@@ -157,7 +161,9 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
                 }
                 if let Some(statements) = else_s {
                     for s in statements {
-                        run_statement(&mut global_vars, s)?;
+                        if let Some(return_val) = run_statement(&mut global_vars, s)? {
+                            return Ok(Some(return_val));
+                        }
                     }
                     return Ok(None);
                 }
