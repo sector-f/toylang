@@ -196,10 +196,6 @@ fn run_statement(mut global_vars: &mut VarMap, statement: Statement) -> Result<O
             let _ = stdout().write_all("\n".as_bytes());
             let _ = stdout().flush();
         },
-        Statement::Typeof(expr) => {
-            let e = eval_expr(&global_vars, &expr)?;
-            println!("{}", e.get_type());
-        },
         Statement::Exit(e) => {
             let status = eval_expr(&global_vars, &e)?;
             if let Value::Num(exit_val) = status {
@@ -299,6 +295,10 @@ fn eval_expr(global_vars: &VarMap, expr: &Expr) -> Result<Value, String> {
             } else {
                 return Err(format!("expected type, found {}", new_type.get_type()))
             }
+        },
+        Expr::TypeOf(ref expr) => {
+            let e = eval_expr(global_vars, expr)?;
+            Ok(Value::Type(e.get_type()))
         },
         Expr::CallFunc(ref f_ident, ref args) => {
             let func = eval_expr(global_vars, f_ident)?;

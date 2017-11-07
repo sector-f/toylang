@@ -126,4 +126,11 @@ mod tests {
         assert!(statement("foo %= 6;").is_ok());
         assert!(statement("foo **= 7;").is_ok());
     }
+
+    #[test]
+    fn type_of() {
+        assert!(expression("typeof(5)").is_ok());
+        assert!(expression("typeof(\"bar\")").is_ok());
+        assert!(statement(r#"let var = 3 as typeof("foobar");"#).is_ok());
+    }
 }

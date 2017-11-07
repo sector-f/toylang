@@ -40,9 +40,6 @@ pub statement -> Statement
             None => Statement::Print(Vec::new()),
         }
     }
-    / "typeof" whitespace+ e:expression ";" whitespace* {
-        Statement::Typeof(e)
-    }
     / "exit" e:maybe_expression whitespace* ";" whitespace* {
         match e {
             Some(val) =>  Statement::Exit(val),
@@ -119,6 +116,7 @@ pub super_atom -> Expr
     = l:length { l }
     / u:to_upper { u }
     / l:to_lower { l }
+    / t:type_of { t }
     / f:func_def { f }
     / f:func_call { f }
     / i:index { i }
@@ -153,6 +151,11 @@ pub to_upper -> Expr
 
 pub to_lower -> Expr
     = "to_lower(" whitespace* sa:expression whitespace* ")" { Expr::ToLower(Box::new(sa)) }
+
+pub type_of -> Expr
+    = "typeof(" whitespace* e:expression  whitespace* ")" {
+        Expr::TypeOf(Box::new(e))
+    }
 
 index -> Expr
     = var:atom b:brackets+ {

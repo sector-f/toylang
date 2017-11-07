@@ -18,7 +18,6 @@ pub enum Statement {
     While(Expr, Vec<Statement>),
     Print(Vec<Expr>),
     Println(Vec<Expr>),
-    Typeof(Expr),
     Exit(Expr),
 }
 
@@ -34,6 +33,7 @@ pub enum Expr {
     FuncDef(Value),
     Reference(String),
     Typecast(Box<Expr>, Box<Expr>),
+    TypeOf(Box<Expr>),
     CallFunc(Box<Expr>, Vec<Expr>),
     Array(Vec<Expr>),
     Index(Box<Expr>, Box<Expr>),
