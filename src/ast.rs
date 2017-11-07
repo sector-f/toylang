@@ -30,6 +30,7 @@ pub struct IfStatement {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Literal(Value),
+    FuncDef(Value),
     Reference(String),
     Typecast(Box<Expr>, Box<Expr>),
     CallFunc(Box<Expr>, Vec<Expr>),
@@ -124,6 +125,7 @@ pub enum Value {
     Type(Type),
     Void,
     Func(Vec<(String, Type)>, Vec<Statement>), // (args, body)
+    Closure(Box<Value>, Vec<(String, Value)>)
 }
 
 impl Value {
@@ -136,6 +138,7 @@ impl Value {
             Value::Type(_) => Type::Type,
             Value::Void => Type::Void,
             Value::Func(ref args, ref _body) => Type::Func(args.iter().map(|a| a.1.clone()).collect()),
+            Value::Closure(ref function, ref _env) => function.get_type(),
         }
     }
 }
@@ -156,6 +159,7 @@ impl Display for Value {
                 let list = args.iter().format_with(", ", |item, f| f(&format_args!("{}", item.1)));
                 format!("func({})", list)
             },
+            Value::Closure(ref function, ref _env) => format!("{}", function)
         };
 
         write!(f, "{}", text)
